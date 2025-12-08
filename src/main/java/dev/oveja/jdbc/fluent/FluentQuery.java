@@ -1,6 +1,7 @@
 package dev.oveja.jdbc.fluent;
 
 import dev.oveja.jdbc.fluent.interfaces.GenericFlow;
+import dev.oveja.jdbc.fluent.interfaces.call.CallInParam;
 import dev.oveja.jdbc.fluent.interfaces.insert.returning.id.InsertIdBinder;
 import dev.oveja.jdbc.fluent.interfaces.dml.DmlStatementBinder;
 import dev.oveja.jdbc.fluent.paths.GenericPath;

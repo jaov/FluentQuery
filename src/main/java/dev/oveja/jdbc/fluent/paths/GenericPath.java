@@ -1,6 +1,7 @@
 package dev.oveja.jdbc.fluent.paths;
 
 import dev.oveja.jdbc.fluent.interfaces.GenericFlow;
+import dev.oveja.jdbc.fluent.interfaces.call.CallInParam;
 import dev.oveja.jdbc.fluent.interfaces.insert.returning.InsertStatementBinder;
 import dev.oveja.jdbc.fluent.interfaces.select.SelectBinder;
 
@@ -22,6 +23,9 @@ public class GenericPath <T> implements GenericFlow<T>{
     public InsertStatementBinder<T> insertReturning(String sql) {
         return new InsertReturningPath<>(this.clazz, sql);
     }
+
+    @Override
+    public CallInParam<T> call(String sql) { return  new CallPath<>(this.clazz,sql);}
 
 
 }
