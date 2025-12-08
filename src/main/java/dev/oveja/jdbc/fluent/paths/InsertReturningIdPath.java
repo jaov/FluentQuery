@@ -14,12 +14,12 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class InsertReturningInsertInsertIdPath<S extends Serializable> implements InsertIdBinder<S>, InsertIdExecutor<S> {
+public class InsertReturningIdPath<S extends Serializable> implements InsertIdBinder<S>, InsertIdExecutor<S> {
     private final String sql;
     private ParameterBinder binder;
     private final RowMapper<S> mapper;
 
-    public InsertReturningInsertInsertIdPath(Class<S> ignoredClazz, RowMapper<S> mapper, String sql) {
+    public InsertReturningIdPath(Class<S> ignoredClazz, RowMapper<S> mapper, String sql) {
         this.sql = sql;
         this.mapper= mapper;
     }
