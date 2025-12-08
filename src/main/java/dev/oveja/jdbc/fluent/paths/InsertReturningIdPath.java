@@ -31,7 +31,8 @@ public class InsertReturningIdPath<S extends Serializable> implements InsertIdBi
             binder.accept(stmt);
 
             List<S> ret = new ArrayList<>();
-            try(ResultSet rs = stmt.executeQuery()) {
+            stmt.executeUpdate();
+            try(ResultSet rs = stmt.getGeneratedKeys()) {
                 while(rs.next()) {
                     ret.add(mapper.apply(rs));
                 }

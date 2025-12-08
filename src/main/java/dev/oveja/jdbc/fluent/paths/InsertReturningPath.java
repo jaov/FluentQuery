@@ -44,7 +44,8 @@ public class InsertReturningPath<T> implements InsertStatementBinder<T>, InsertR
             binder.accept(stmt);
 
             List<T> ret = new ArrayList<>();
-            try(ResultSet rs = stmt.executeQuery()) {
+            stmt.executeUpdate();
+            try(ResultSet rs = stmt.getGeneratedKeys()) {
                 while(rs.next()) {
                     ret.add(mapper.apply(rs));
                 }
