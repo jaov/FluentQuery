@@ -19,7 +19,7 @@ public class InsertReturningInsertInsertIdPath<S extends Serializable> implement
     private ParameterBinder binder;
     private final RowMapper<S> mapper;
 
-    public InsertReturningInsertInsertIdPath(Class<S> clazz, RowMapper<S> mapper, String sql) {
+    public InsertReturningInsertInsertIdPath(Class<S> ignoredClazz, RowMapper<S> mapper, String sql) {
         this.sql = sql;
         this.mapper= mapper;
     }

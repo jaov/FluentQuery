@@ -20,7 +20,7 @@ public class InsertReturningPath<T> implements InsertStatementBinder<T>, InsertR
     private ParameterBinder binder;
     private RowMapper<T> mapper;
 
-    public InsertReturningPath(Class<T> clazz, String sql) {
+    public InsertReturningPath(Class<T> ignoredClazz, String sql) {
         this.sql = sql;
     }
 

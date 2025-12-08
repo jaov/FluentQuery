@@ -20,7 +20,7 @@ public class SelectPath<T> implements SelectBinder<T>, SelectMapper<T>, SelectEx
     private ParameterBinder binder;
     private RowMapper<T> mapper;
 
-    public SelectPath(Class<T> clazz, String sql) {
+    public SelectPath(Class<T> ignoredClazz, String sql) {
         this.sql = sql;
     }
 
