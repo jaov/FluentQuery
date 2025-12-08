@@ -1,6 +1,6 @@
 package dev.oveja.jdbc.fluent.paths;
 
-import dev.oveja.jdbc.fluent.interfaces.insert.returning.id.InsertIdMapper;
+import dev.oveja.jdbc.fluent.interfaces.insert.returning.id.InsertIdExecutor;
 import dev.oveja.jdbc.fluent.interfaces.insert.returning.id.InsertIdBinder;
 import dev.oveja.jdbc.fluent.interfaces.throwing.named.ParameterBinder;
 import dev.oveja.jdbc.fluent.interfaces.throwing.named.RowMapper;
@@ -14,7 +14,7 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 
-public class InsertReturningInsertInsertIdPath<S extends Serializable> implements InsertIdBinder<S>, InsertIdMapper<S> {
+public class InsertReturningInsertInsertIdPath<S extends Serializable> implements InsertIdBinder<S>, InsertIdExecutor<S> {
     private final String sql;
     private ParameterBinder binder;
     private final RowMapper<S> mapper;
@@ -41,7 +41,7 @@ public class InsertReturningInsertInsertIdPath<S extends Serializable> implement
     }
 
     @Override
-    public InsertIdMapper<S> bind(ParameterBinder binder) {
+    public InsertIdExecutor<S> bind(ParameterBinder binder) {
         this.binder = binder;
         return this;
     }

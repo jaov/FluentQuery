@@ -4,7 +4,7 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
-public interface InsertIdMapper<T> {
+public interface InsertIdExecutor<T> {
     List<T> executeReturningIds() throws SQLException;
 
     default Optional<T> executeReturningOneId() throws SQLException {
