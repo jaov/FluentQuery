@@ -5,7 +5,7 @@ import dev.oveja.jdbc.fluent.interfaces.call.CallInParam;
 import dev.oveja.jdbc.fluent.interfaces.call.CallOutParam;
 import dev.oveja.jdbc.fluent.interfaces.throwing.named.CallableMapper;
 import dev.oveja.jdbc.fluent.interfaces.throwing.named.CallableStatementBinder;
-import dev.oveja.jdbc.fluent.loader.ConnectionSupplierLoader;
+import dev.oveja.jdbc.fluent.interfaces.throwing.named.ConnectionSupplier;
 
 import java.sql.CallableStatement;
 import java.sql.Connection;
@@ -17,11 +17,13 @@ import java.util.List;
 public class CallPath<T> implements CallInParam<T>, CallOutParam<T> {
 
     private final String sql;
+    private final ConnectionSupplier supplier;
     private CallableStatementBinder inBinder;
     private final List<CallableStatementBinder> outBinders;
 
 
-    public CallPath(Class<T> ignoredClass, String sql) {
+    public CallPath(ConnectionSupplier supplier, Class<T> ignoredClass, String sql) {
+        this.supplier = supplier;
         this.outBinders = new ArrayList<>();
         this.sql = sql;
     }
@@ -70,8 +72,8 @@ public class CallPath<T> implements CallInParam<T>, CallOutParam<T> {
 
         @Override
         public R execute() throws SQLException {
-            try(Connection con = ConnectionSupplierLoader.load().get();
-                CallableStatement stmt = con.prepareCall(sql)){
+            Connection con = supplier.get();
+            try(CallableStatement stmt = con.prepareCall(sql)){
                 inBinder.accept(stmt);
 
                 for (CallableStatementBinder binder : outBinders) {
@@ -82,6 +84,10 @@ public class CallPath<T> implements CallInParam<T>, CallOutParam<T> {
 
                 return this.mapper.apply(stmt);
 
+            } finally {
+                if (supplier.shouldClose()) {
+                    con.close();
+                }
             }
         }
     }

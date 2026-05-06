@@ -3,9 +3,9 @@ package dev.oveja.jdbc.fluent.paths;
 import dev.oveja.jdbc.fluent.interfaces.insert.returning.InsertExecutor;
 import dev.oveja.jdbc.fluent.interfaces.insert.returning.InsertRowMapper;
 import dev.oveja.jdbc.fluent.interfaces.insert.returning.InsertStatementBinder;
+import dev.oveja.jdbc.fluent.interfaces.throwing.named.ConnectionSupplier;
 import dev.oveja.jdbc.fluent.interfaces.throwing.named.ParameterBinder;
 import dev.oveja.jdbc.fluent.interfaces.throwing.named.RowMapper;
-import dev.oveja.jdbc.fluent.loader.ConnectionSupplierLoader;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -17,10 +17,12 @@ import java.util.List;
 public class InsertReturningPath<T> implements InsertStatementBinder<T>, InsertRowMapper<T>, InsertExecutor<T> {
 
     private final String sql;
+    private final ConnectionSupplier supplier;
     private ParameterBinder binder;
     private RowMapper<T> mapper;
 
-    public InsertReturningPath(Class<T> ignoredClazz, String sql) {
+    public InsertReturningPath(ConnectionSupplier supplier, Class<T> ignoredClazz, String sql) {
+        this.supplier = supplier;
         this.sql = sql;
     }
 
@@ -39,8 +41,8 @@ public class InsertReturningPath<T> implements InsertStatementBinder<T>, InsertR
 
     @Override
     public List<T> executeReturning() throws SQLException {
-        try(Connection con = ConnectionSupplierLoader.load().get();
-            PreparedStatement stmt = con.prepareStatement(this.sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
+        Connection con = supplier.get();
+        try(PreparedStatement stmt = con.prepareStatement(this.sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
             binder.accept(stmt);
 
             List<T> ret = new ArrayList<>();
@@ -50,6 +52,10 @@ public class InsertReturningPath<T> implements InsertStatementBinder<T>, InsertR
                     ret.add(mapper.apply(rs));
                 }
                 return ret;
+            }
+        } finally {
+            if (supplier.shouldClose()) {
+                con.close();
             }
         }
 
