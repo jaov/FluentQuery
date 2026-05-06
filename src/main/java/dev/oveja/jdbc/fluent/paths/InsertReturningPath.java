@@ -41,6 +41,11 @@ public class InsertReturningPath<T> implements InsertStatementBinder<T>, InsertR
 
     @Override
     public List<T> executeReturning() throws SQLException {
+        return executeReturning(this.supplier);
+    }
+
+    @Override
+    public List<T> executeReturning(ConnectionSupplier supplier) throws SQLException {
         Connection con = supplier.get();
         try(PreparedStatement stmt = con.prepareStatement(this.sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
             binder.accept(stmt);

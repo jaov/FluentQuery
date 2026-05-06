@@ -28,6 +28,11 @@ public class InsertReturningIdPath<S extends Serializable> implements InsertIdBi
 
     @Override
     public List<S> executeReturningIds() throws SQLException {
+        return executeReturningIds(this.supplier);
+    }
+
+    @Override
+    public List<S> executeReturningIds(ConnectionSupplier supplier) throws SQLException {
         Connection con = supplier.get();
         try(PreparedStatement stmt = con.prepareStatement(this.sql, PreparedStatement.RETURN_GENERATED_KEYS)) {
             binder.accept(stmt);

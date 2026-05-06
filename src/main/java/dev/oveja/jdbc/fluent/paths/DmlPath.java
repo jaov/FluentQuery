@@ -21,6 +21,11 @@ public class DmlPath implements DmlStatementExecutor, DmlStatementBinder {
 
     @Override
     public int execute() throws SQLException {
+        return execute(this.supplier);
+    }
+
+    @Override
+    public int execute(ConnectionSupplier supplier) throws SQLException {
         Connection con = supplier.get();
         try (PreparedStatement stmt = con.prepareStatement(this.sql)) {
             binder.accept(stmt);

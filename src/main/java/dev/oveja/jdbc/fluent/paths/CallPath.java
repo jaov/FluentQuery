@@ -72,6 +72,11 @@ public class CallPath<T> implements CallInParam<T>, CallOutParam<T> {
 
         @Override
         public R execute() throws SQLException {
+            return execute(CallPath.this.supplier);
+        }
+
+        @Override
+        public R execute(ConnectionSupplier supplier) throws SQLException {
             Connection con = supplier.get();
             try(CallableStatement stmt = con.prepareCall(sql)){
                 inBinder.accept(stmt);

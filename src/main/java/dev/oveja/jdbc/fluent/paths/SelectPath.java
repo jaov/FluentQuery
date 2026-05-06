@@ -41,6 +41,11 @@ public class SelectPath<T> implements SelectBinder<T>, SelectMapper<T>, SelectEx
 
     @Override
     public List<T> execute() throws SQLException {
+        return execute(this.supplier);
+    }
+
+    @Override
+    public List<T> execute(ConnectionSupplier supplier) throws SQLException {
         List<T> returnList = new ArrayList<>();
         Connection con = supplier.get();
         try(PreparedStatement stmt = con.prepareStatement(sql)) {
