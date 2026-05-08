@@ -87,8 +87,32 @@ public class CrudTest extends AbstractFluentQueryTest {
     }
 
     @Test
+    void testSelectOne() throws Exception {
+        FluentQuery.insert(supplier, "INSERT INTO users (name) VALUES (?)")
+                .bind(ps -> ps.setString(1, "Alice"))
+                .execute();
+
+        Optional<User> user = FluentQuery.forClass(supplier, User.class)
+                .selectOne("SELECT * FROM users WHERE name = ?")
+                .bind(ps -> ps.setString(1, "Alice"))
+                .map(rs -> new User(rs.getInt("id"), rs.getString("name"), rs.getString("email")))
+                .execute();
+
+        assertTrue(user.isPresent());
+        assertEquals("Alice", user.get().name);
+
+        Optional<User> none = FluentQuery.forClass(supplier, User.class)
+                .selectOne("SELECT * FROM users WHERE name = ?")
+                .bind(ps -> ps.setString(1, "Bob"))
+                .map(rs -> new User(rs.getInt("id"), rs.getString("name"), rs.getString("email")))
+                .execute();
+
+        assertFalse(none.isPresent());
+    }
+
+    @Test
     void testAsFunction() throws Exception {
-        dev.oveja.jdbc.fluent.interfaces.throwing.ThrowingFunction<dev.oveja.jdbc.fluent.interfaces.throwing.named.ConnectionSupplier, List<User>, SQLException> searchFunc =
+        ThrowingFunction<ConnectionSupplier, List<User>, SQLException> searchFunc =
                 FluentQuery.forClass(supplier, User.class)
                         .select("SELECT * FROM users WHERE name = ?")
                         .bind(ps -> ps.setString(1, "Alice"))

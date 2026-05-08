@@ -1,17 +1,18 @@
 package dev.oveja.jdbc.fluent;
 
-import dev.oveja.jdbc.fluent.interfaces.throwing.ThrowingConsumer;
-import dev.oveja.jdbc.fluent.interfaces.throwing.ThrowingFunction;
-import dev.oveja.jdbc.fluent.interfaces.throwing.named.ConnectionSupplier;
-import org.junit.jupiter.api.Test;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertSame;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
 
 import java.sql.Connection;
-import java.sql.ResultSet;
+import java.sql.DriverManager;
 import java.sql.SQLException;
-import java.sql.Statement;
 import java.util.List;
 
-import static org.junit.jupiter.api.Assertions.*;
+import org.junit.jupiter.api.Test;
+
+import dev.oveja.jdbc.fluent.ConnectionSupplier;
 
 public class TransactionTest extends AbstractFluentQueryTest {
 
@@ -106,6 +107,23 @@ public class TransactionTest extends AbstractFluentQueryTest {
                 .execute();
         
         assertEquals("Bob", names.get(0));
+    }
+
+    @Test
+    void testConnectionIdentity() throws Exception {
+        Connection realConnection = DriverManager.getConnection(URL);
+        ConnectionSupplier customSupplier = () -> realConnection;
+
+        FluentQuery.transaction(customSupplier, cs -> {
+            // Verify that the connection we get from the borrowed supplier
+            // is EXACTLY the same instance we provided to the transaction block.
+            assertSame(realConnection, cs.get(), "Borrowed supplier must return the exact same connection instance");
+            
+            // It should also return the same instance every time it's called
+            assertSame(cs.get(), cs.get(), "Borrowed supplier must be consistent");
+        });
+        
+        assertTrue(realConnection.isClosed(), "Connection MUST be closed by FluentQuery after the transaction block");
     }
 
     private int countUsers() throws SQLException {

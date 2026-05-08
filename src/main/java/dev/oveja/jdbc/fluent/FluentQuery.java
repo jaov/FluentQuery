@@ -1,17 +1,16 @@
 package dev.oveja.jdbc.fluent;
 
-import dev.oveja.jdbc.fluent.interfaces.GenericFlow;
-import dev.oveja.jdbc.fluent.interfaces.insert.returning.id.InsertIdBinder;
-import dev.oveja.jdbc.fluent.interfaces.dml.DmlStatementBinder;
-import dev.oveja.jdbc.fluent.interfaces.throwing.ThrowingConsumer;
-import dev.oveja.jdbc.fluent.interfaces.throwing.named.BorrowedConnectionSupplier;
-import dev.oveja.jdbc.fluent.interfaces.throwing.named.ConnectionSupplier;
-import dev.oveja.jdbc.fluent.loader.ConnectionSupplierLoader;
-import dev.oveja.jdbc.fluent.paths.GenericPath;
-import dev.oveja.jdbc.fluent.paths.InsertReturningIdPath;
-import dev.oveja.jdbc.fluent.paths.DmlPath;
+import dev.oveja.jdbc.fluent.api.Binder;
+import dev.oveja.jdbc.fluent.api.Executor;
+import dev.oveja.jdbc.fluent.api.GenericFlow;
+import dev.oveja.jdbc.fluent.api.ListExecutor;
+import dev.oveja.jdbc.fluent.internal.ConnectionSupplierLoader;
+import dev.oveja.jdbc.fluent.internal.GenericPath;
+import dev.oveja.jdbc.fluent.internal.InsertReturningIdPath;
+import dev.oveja.jdbc.fluent.internal.DmlPath;
 
 import java.sql.Connection;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public final class FluentQuery {
@@ -26,51 +25,51 @@ public final class FluentQuery {
         return new GenericPath<>(supplier, clazz);
     }
 
-    public static InsertIdBinder<Integer> insertReturningIntId(String sql) {
+    public static Binder<PreparedStatement, ListExecutor<Integer>> insertReturningIntId(String sql) {
         return insertReturningIntId(ConnectionSupplierLoader.load(), sql);
     }
 
-    public static InsertIdBinder<Integer> insertReturningIntId(ConnectionSupplier supplier, String sql) {
+    public static Binder<PreparedStatement, ListExecutor<Integer>> insertReturningIntId(ConnectionSupplier supplier, String sql) {
         return new InsertReturningIdPath<>(supplier, Integer.class, rs -> rs.getInt(1), sql);
     }
 
-    public static InsertIdBinder<Long> insertReturningLongId(String sql) {
+    public static Binder<PreparedStatement, ListExecutor<Long>> insertReturningLongId(String sql) {
         return insertReturningLongId(ConnectionSupplierLoader.load(), sql);
     }
 
-    public static InsertIdBinder<Long> insertReturningLongId(ConnectionSupplier supplier, String sql) {
+    public static Binder<PreparedStatement, ListExecutor<Long>> insertReturningLongId(ConnectionSupplier supplier, String sql) {
         return new InsertReturningIdPath<>(supplier, Long.class, rs -> rs.getLong(1), sql);
     }
 
-    public static InsertIdBinder<String> insertReturningStringId(String sql) {
+    public static Binder<PreparedStatement, ListExecutor<String>> insertReturningStringId(String sql) {
         return insertReturningStringId(ConnectionSupplierLoader.load(), sql);
     }
 
-    public static InsertIdBinder<String> insertReturningStringId(ConnectionSupplier supplier, String sql) {
+    public static Binder<PreparedStatement, ListExecutor<String>> insertReturningStringId(ConnectionSupplier supplier, String sql) {
         return new InsertReturningIdPath<>(supplier, String.class, rs -> rs.getString(1), sql);
     }
 
-    public static DmlStatementBinder update(String sql) {
+    public static Binder<PreparedStatement, Executor<Integer>> update(String sql) {
         return update(ConnectionSupplierLoader.load(), sql);
     }
 
-    public static DmlStatementBinder update(ConnectionSupplier supplier, String sql) {
+    public static Binder<PreparedStatement, Executor<Integer>> update(ConnectionSupplier supplier, String sql) {
         return new DmlPath(supplier, sql);
     }
 
-    public static DmlStatementBinder delete(String sql) {
+    public static Binder<PreparedStatement, Executor<Integer>> delete(String sql) {
         return delete(ConnectionSupplierLoader.load(), sql);
     }
 
-    public static DmlStatementBinder delete(ConnectionSupplier supplier, String sql) {
+    public static Binder<PreparedStatement, Executor<Integer>> delete(ConnectionSupplier supplier, String sql) {
         return new DmlPath(supplier, sql);
     }
 
-    public static DmlStatementBinder insert(String sql) {
+    public static Binder<PreparedStatement, Executor<Integer>> insert(String sql) {
         return insert(ConnectionSupplierLoader.load(), sql);
     }
 
-    public static DmlStatementBinder insert(ConnectionSupplier supplier, String sql) {
+    public static Binder<PreparedStatement, Executor<Integer>> insert(ConnectionSupplier supplier, String sql) {
         return new DmlPath(supplier, sql);
     }
 

@@ -1,6 +1,6 @@
 package dev.oveja.jdbc.fluent;
 
-import dev.oveja.jdbc.fluent.interfaces.throwing.named.ConnectionSupplier;
+import dev.oveja.jdbc.fluent.ConnectionSupplier;
 import org.junit.jupiter.api.BeforeEach;
 
 import java.sql.Connection;
