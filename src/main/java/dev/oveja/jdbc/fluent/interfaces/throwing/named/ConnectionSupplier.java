@@ -12,8 +12,8 @@ public interface ConnectionSupplier extends ThrowingSupplier<Connection,SQLExcep
         return true;
     }
 
-    static ConnectionSupplier borrowed(Connection con) {
-        return new ConnectionSupplier() {
+    static BorrowedConnectionSupplier borrowed(Connection con) {
+        return new BorrowedConnectionSupplier() {
             @Override
             public Connection get() throws SQLException {
                 return con;
@@ -22,6 +22,16 @@ public interface ConnectionSupplier extends ThrowingSupplier<Connection,SQLExcep
             @Override
             public boolean shouldClose() {
                 return false;
+            }
+
+            @Override
+            public void commit() throws SQLException {
+                con.commit();
+            }
+
+            @Override
+            public void rollback() throws SQLException {
+                con.rollback();
             }
         };
     }

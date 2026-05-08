@@ -4,6 +4,7 @@ import dev.oveja.jdbc.fluent.interfaces.GenericFlow;
 import dev.oveja.jdbc.fluent.interfaces.insert.returning.id.InsertIdBinder;
 import dev.oveja.jdbc.fluent.interfaces.dml.DmlStatementBinder;
 import dev.oveja.jdbc.fluent.interfaces.throwing.ThrowingConsumer;
+import dev.oveja.jdbc.fluent.interfaces.throwing.named.BorrowedConnectionSupplier;
 import dev.oveja.jdbc.fluent.interfaces.throwing.named.ConnectionSupplier;
 import dev.oveja.jdbc.fluent.loader.ConnectionSupplierLoader;
 import dev.oveja.jdbc.fluent.paths.GenericPath;
@@ -73,11 +74,11 @@ public final class FluentQuery {
         return new DmlPath(supplier, sql);
     }
 
-    public static void transaction(ThrowingConsumer<ConnectionSupplier, Exception> action) throws Exception {
+    public static void transaction(ThrowingConsumer<BorrowedConnectionSupplier, Exception> action) throws Exception {
         transaction(ConnectionSupplierLoader.load(), action);
     }
 
-    public static void transaction(ConnectionSupplier supplier, ThrowingConsumer<ConnectionSupplier, Exception> action) throws Exception {
+    public static void transaction(ConnectionSupplier supplier, ThrowingConsumer<BorrowedConnectionSupplier, Exception> action) throws Exception {
         try (Connection con = supplier.get()) {
             con.setAutoCommit(false);
             try {

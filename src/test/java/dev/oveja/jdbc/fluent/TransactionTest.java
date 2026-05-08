@@ -46,27 +46,66 @@ public class TransactionTest extends AbstractFluentQueryTest {
     }
 
     @Test
-    void testComposition() throws Exception {
-        ThrowingConsumer<ConnectionSupplier, SQLException> insertAlice =
-                FluentQuery.insert(supplier, "INSERT INTO users (name) VALUES (?)")
-                        .bind(ps -> ps.setString(1, "Alice"))
-                        .asConsumer();
-
-        ThrowingFunction<ConnectionSupplier, List<String>, SQLException> selectNames =
-                FluentQuery.forClass(supplier, String.class)
-                        .select("SELECT name FROM users")
-                        .noBind()
-                        .map(rs -> rs.getString(1))
-                        .asFunction();
-
+    void testManualCommit() throws Exception {
         FluentQuery.transaction(supplier, cs -> {
-            insertAlice.accept(cs);
-            List<String> names = selectNames.apply(cs);
-            assertEquals(1, names.size());
-            assertEquals("Alice", names.get(0));
+            FluentQuery.insert(cs, "INSERT INTO users (name) VALUES (?)")
+                    .bind(ps -> ps.setString(1, "Alice"))
+                    .execute();
+            
+            cs.commit();
+
+            FluentQuery.insert(cs, "INSERT INTO users (name) VALUES (?)")
+                    .bind(ps -> ps.setString(1, "Bob"))
+                    .execute();
+        });
+
+        assertEquals(2, countUsers());
+    }
+
+    @Test
+    void testDoubleCommit() throws Exception {
+        FluentQuery.transaction(supplier, cs -> {
+            FluentQuery.insert(cs, "INSERT INTO users (name) VALUES (?)")
+                    .bind(ps -> ps.setString(1, "Alice"))
+                    .execute();
+            
+            cs.commit(); // Manual commit 1
+
+            FluentQuery.insert(cs, "INSERT INTO users (name) VALUES (?)")
+                    .bind(ps -> ps.setString(1, "Bob"))
+                    .execute();
+            
+            // Automatic commit will happen after this
+        });
+
+        assertEquals(2, countUsers());
+    }
+
+    @Test
+    void testManualRollbackThenWork() throws Exception {
+        FluentQuery.transaction(supplier, cs -> {
+            FluentQuery.insert(cs, "INSERT INTO users (name) VALUES (?)")
+                    .bind(ps -> ps.setString(1, "Alice"))
+                    .execute();
+            
+            cs.rollback(); // Alice is gone
+
+            FluentQuery.insert(cs, "INSERT INTO users (name) VALUES (?)")
+                    .bind(ps -> ps.setString(1, "Bob"))
+                    .execute();
+            
+            // Automatic commit will happen for Bob
         });
 
         assertEquals(1, countUsers());
+        
+        List<String> names = FluentQuery.forClass(supplier, String.class)
+                .select("SELECT name FROM users")
+                .noBind()
+                .map(rs -> rs.getString(1))
+                .execute();
+        
+        assertEquals("Bob", names.get(0));
     }
 
     private int countUsers() throws SQLException {
