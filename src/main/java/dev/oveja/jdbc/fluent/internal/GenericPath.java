@@ -19,17 +19,17 @@ public class GenericPath <T> implements GenericFlow<T>{
 
 
     @Override
-    public Binder<PreparedStatement, Mapper<ResultSet, T, ListExecutor<T>>> select(String sql) {
+    public QueryBinder<T, ListExecutor<T>> select(String sql) {
         return SelectPath.asList(this.supplier, sql);
     }
 
     @Override
-    public Binder<PreparedStatement, Mapper<ResultSet, T, Executor<Optional<T>>>> selectOne(String sql) {
+    public QueryBinder<T, Executor<Optional<T>>> selectOne(String sql) {
         return SelectPath.asSingle(this.supplier, sql);
     }
 
     @Override
-    public Binder<PreparedStatement, Mapper<ResultSet, T, ListExecutor<T>>> insertReturning(String sql) {
+    public QueryBinder<T, ListExecutor<T>> insertReturning(String sql) {
         return new InsertReturningPath<>(this.supplier, this.clazz, sql);
     }
 
@@ -37,6 +37,7 @@ public class GenericPath <T> implements GenericFlow<T>{
     public CallPath<T> call(String sql) { 
         return new CallPath<>(this.supplier, this.clazz, sql);
     }
+
 
 
 }

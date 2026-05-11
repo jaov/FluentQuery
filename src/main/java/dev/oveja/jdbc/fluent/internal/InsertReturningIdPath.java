@@ -1,11 +1,12 @@
 package dev.oveja.jdbc.fluent.internal;
 
-import dev.oveja.jdbc.fluent.api.Binder;
+import dev.oveja.jdbc.fluent.api.QueryBinder;
 import dev.oveja.jdbc.fluent.api.ListExecutor;
 import dev.oveja.jdbc.fluent.ThrowingConsumer;
+import dev.oveja.jdbc.fluent.ThrowingFunction;
 import dev.oveja.jdbc.fluent.ConnectionSupplier;
-import dev.oveja.jdbc.fluent.RowMapper;
 
+import dev.oveja.jdbc.fluent.RowMapper;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -14,14 +15,13 @@ import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 
-public class InsertReturningIdPath<T> implements 
-        Binder<PreparedStatement, ListExecutor<T>>, 
-        ListExecutor<T> {
+public class InsertReturningIdPath<T> 
+        extends BasePreparedStatementPath<QueryBinder<T, ListExecutor<T>>>
+        implements QueryBinder<T, ListExecutor<T>>, ListExecutor<T> {
 
     private final ConnectionSupplier supplier;
     private final String sql;
-    private final RowMapper<T> mapper;
-    private ThrowingConsumer<PreparedStatement, SQLException> binder = ps -> {};
+    private RowMapper<T> mapper;
 
     public InsertReturningIdPath(ConnectionSupplier supplier, Class<T> ignoredClazz, RowMapper<T> mapper, String sql) {
         this.supplier = supplier;
@@ -30,8 +30,13 @@ public class InsertReturningIdPath<T> implements
     }
 
     @Override
-    public ListExecutor<T> bind(ThrowingConsumer<PreparedStatement, SQLException> binder) {
-        this.binder = binder;
+    protected QueryBinder<T, ListExecutor<T>> self() {
+        return this;
+    }
+
+    @Override
+    public ListExecutor<T> map(RowMapper<T> mapper) {
+        this.mapper = mapper;
         return this;
     }
 
@@ -44,7 +49,7 @@ public class InsertReturningIdPath<T> implements
     public List<T> execute(ConnectionSupplier supplier) throws SQLException {
         Connection con = supplier.get();
         try (PreparedStatement ps = con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
-            binder.accept(ps);
+            applyBinders(ps);
             ps.executeUpdate();
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 List<T> list = new ArrayList<>();

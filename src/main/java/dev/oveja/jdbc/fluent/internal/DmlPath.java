@@ -1,7 +1,6 @@
 package dev.oveja.jdbc.fluent.internal;
 
-import dev.oveja.jdbc.fluent.api.Binder;
-import dev.oveja.jdbc.fluent.api.Executor;
+import dev.oveja.jdbc.fluent.api.DmlBinder;
 import dev.oveja.jdbc.fluent.ThrowingConsumer;
 import dev.oveja.jdbc.fluent.ConnectionSupplier;
 
@@ -9,13 +8,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-public class DmlPath implements 
-        Binder<PreparedStatement, Executor<Integer>>, 
-        Executor<Integer> {
+public class DmlPath extends BasePreparedStatementPath<DmlBinder> implements DmlBinder {
 
     private final ConnectionSupplier supplier;
     private final String sql;
-    private ThrowingConsumer<PreparedStatement, SQLException> binder = ps -> {};
 
     public DmlPath(ConnectionSupplier supplier, String sql) {
         this.supplier = supplier;
@@ -23,8 +19,7 @@ public class DmlPath implements
     }
 
     @Override
-    public Executor<Integer> bind(ThrowingConsumer<PreparedStatement, SQLException> binder) {
-        this.binder = binder;
+    protected DmlBinder self() {
         return this;
     }
 
@@ -37,7 +32,7 @@ public class DmlPath implements
     public Integer execute(ConnectionSupplier supplier) throws SQLException {
         Connection con = supplier.get();
         try (PreparedStatement ps = con.prepareStatement(sql)) {
-            binder.accept(ps);
+            applyBinders(ps);
             return ps.executeUpdate();
         } finally {
             if (supplier.shouldClose()) {

@@ -1,14 +1,12 @@
 package dev.oveja.jdbc.fluent.internal;
 
-import dev.oveja.jdbc.fluent.api.Binder;
-import dev.oveja.jdbc.fluent.api.Executor;
-import dev.oveja.jdbc.fluent.api.ListExecutor;
-import dev.oveja.jdbc.fluent.api.Mapper;
+import dev.oveja.jdbc.fluent.api.*;
 import dev.oveja.jdbc.fluent.ThrowingBiFunction;
 import dev.oveja.jdbc.fluent.ThrowingConsumer;
+import dev.oveja.jdbc.fluent.ThrowingFunction;
 import dev.oveja.jdbc.fluent.ConnectionSupplier;
-import dev.oveja.jdbc.fluent.RowMapper;
 
+import dev.oveja.jdbc.fluent.RowMapper;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -17,14 +15,12 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public abstract class SelectPath<T, R, E extends Executor<R>> implements 
-        Binder<PreparedStatement, Mapper<ResultSet, T, E>>, 
-        Mapper<ResultSet, T, E>, 
-        Executor<R> {
+public abstract class SelectPath<T, R, E extends Executor<R>> 
+        extends BasePreparedStatementPath<QueryBinder<T, E>>
+        implements QueryBinder<T, E>, Executor<R> {
 
     protected final ConnectionSupplier supplier;
     protected final String sql;
-    protected ThrowingConsumer<PreparedStatement, SQLException> binder = ps -> {};
     protected RowMapper<T> mapper;
     protected final ThrowingBiFunction<ResultSet, RowMapper<T>, R, SQLException> extractor;
 
@@ -35,20 +31,13 @@ public abstract class SelectPath<T, R, E extends Executor<R>> implements
         this.extractor = extractor;
     }
 
-    // Thank you Joshua Bloch for Effective Java
-    protected abstract E self();
-
-    @Override
-    public Mapper<ResultSet, T, E> bind(ThrowingConsumer<PreparedStatement, SQLException> binder) {
-        this.binder = binder;
-        return this;
-    }
-
     @Override
     public E map(RowMapper<T> mapper) {
         this.mapper = mapper;
-        return self();
+        return selfExecutor();
     }
+
+    protected abstract E selfExecutor();
 
     @Override
     public R execute() throws SQLException {
@@ -59,7 +48,7 @@ public abstract class SelectPath<T, R, E extends Executor<R>> implements
     public R execute(ConnectionSupplier supplier) throws SQLException {
         Connection con = supplier.get();
         try (PreparedStatement ps = con.prepareStatement(sql)) {
-            binder.accept(ps);
+            applyBinders(ps);
             try (ResultSet rs = ps.executeQuery()) {
                 return extractor.apply(rs, mapper);
             }
@@ -90,7 +79,12 @@ public abstract class SelectPath<T, R, E extends Executor<R>> implements
         }
 
         @Override
-        protected ListExecutor<T> self() {
+        protected QueryBinder<T, ListExecutor<T>> self() {
+            return this;
+        }
+
+        @Override
+        protected ListExecutor<T> selfExecutor() {
             return this;
         }
     }
@@ -106,7 +100,12 @@ public abstract class SelectPath<T, R, E extends Executor<R>> implements
         }
 
         @Override
-        protected Executor<Optional<T>> self() {
+        protected QueryBinder<T, Executor<Optional<T>>> self() {
+            return this;
+        }
+
+        @Override
+        protected Executor<Optional<T>> selfExecutor() {
             return this;
         }
     }
