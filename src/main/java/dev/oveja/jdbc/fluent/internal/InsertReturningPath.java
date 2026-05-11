@@ -2,11 +2,10 @@ package dev.oveja.jdbc.fluent.internal;
 
 import dev.oveja.jdbc.fluent.api.QueryBinder;
 import dev.oveja.jdbc.fluent.api.ListExecutor;
-import dev.oveja.jdbc.fluent.ThrowingConsumer;
 import dev.oveja.jdbc.fluent.ThrowingFunction;
 import dev.oveja.jdbc.fluent.ConnectionSupplier;
-
 import dev.oveja.jdbc.fluent.RowMapper;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -15,12 +14,12 @@ import java.util.ArrayList;
 import java.util.List;
 
 public class InsertReturningPath<T> 
-        extends BasePreparedStatementPath<QueryBinder<T, ListExecutor<T>>>
+        extends BaseStatementPath<PreparedStatement, QueryBinder<T, ListExecutor<T>>>
         implements QueryBinder<T, ListExecutor<T>>, ListExecutor<T> {
 
     private final ConnectionSupplier supplier;
     private final String sql;
-    private RowMapper<T> mapper;
+    private ThrowingFunction<ResultSet, T, SQLException> mapper;
 
     public InsertReturningPath(ConnectionSupplier supplier, Class<T> ignoredClazz, String sql) {
         this.supplier = supplier;
@@ -33,7 +32,7 @@ public class InsertReturningPath<T>
     }
 
     @Override
-    public ListExecutor<T> map(RowMapper<T> mapper) {
+    public ListExecutor<T> map(ThrowingFunction<ResultSet, T, SQLException> mapper) {
         this.mapper = mapper;
         return this;
     }

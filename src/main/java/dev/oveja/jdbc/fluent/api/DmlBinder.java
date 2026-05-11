@@ -1,6 +1,8 @@
 package dev.oveja.jdbc.fluent.api;
 
+import java.sql.PreparedStatement;
+
 public interface DmlBinder extends 
-        FluentBinder<DmlBinder>, 
+        FluentBinder<PreparedStatement, DmlBinder>, 
         Executor<Integer> {
 }

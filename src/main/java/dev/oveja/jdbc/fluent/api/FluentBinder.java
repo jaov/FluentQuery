@@ -8,7 +8,7 @@ import java.sql.*;
 import java.time.*;
 import java.util.Collection;
 
-public interface FluentBinder<B> extends Binder<PreparedStatement, B> {
+public interface FluentBinder<S extends PreparedStatement, B> extends Binder<S, B> {
 
     B bind(String value);
     B bind(int value);

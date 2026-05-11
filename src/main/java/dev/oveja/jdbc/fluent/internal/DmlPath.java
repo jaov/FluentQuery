@@ -1,14 +1,13 @@
 package dev.oveja.jdbc.fluent.internal;
 
 import dev.oveja.jdbc.fluent.api.DmlBinder;
-import dev.oveja.jdbc.fluent.ThrowingConsumer;
 import dev.oveja.jdbc.fluent.ConnectionSupplier;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
-public class DmlPath extends BasePreparedStatementPath<DmlBinder> implements DmlBinder {
+public class DmlPath extends BaseStatementPath<PreparedStatement, DmlBinder> implements DmlBinder {
 
     private final ConnectionSupplier supplier;
     private final String sql;

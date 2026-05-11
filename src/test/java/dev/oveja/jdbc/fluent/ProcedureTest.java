@@ -29,11 +29,9 @@ public class ProcedureTest extends AbstractFluentQueryTest {
     void testStoredProcedure() throws Exception {
         String result = FluentQuery.forClass(supplier, String.class)
                 .call("{? = CALL GET_USER_NAME(?, ?)}")
-                .bind(cs -> {
-                    cs.registerOutParameter(1, Types.VARCHAR);
-                    cs.setString(2, "John");
-                    cs.setString(3, "Doe");
-                })
+                .bindOut(Types.VARCHAR) // index 1
+                .bind("John")           // index 2
+                .bind("Doe")            // index 3
                 .map(cs -> cs.getString(1))
                 .execute();
 

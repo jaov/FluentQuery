@@ -2,11 +2,10 @@ package dev.oveja.jdbc.fluent.internal;
 
 import dev.oveja.jdbc.fluent.api.*;
 import dev.oveja.jdbc.fluent.ThrowingBiFunction;
-import dev.oveja.jdbc.fluent.ThrowingConsumer;
 import dev.oveja.jdbc.fluent.ThrowingFunction;
 import dev.oveja.jdbc.fluent.ConnectionSupplier;
-
 import dev.oveja.jdbc.fluent.RowMapper;
+
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -16,23 +15,23 @@ import java.util.List;
 import java.util.Optional;
 
 public abstract class SelectPath<T, R, E extends Executor<R>> 
-        extends BasePreparedStatementPath<QueryBinder<T, E>>
+        extends BaseStatementPath<PreparedStatement, QueryBinder<T, E>>
         implements QueryBinder<T, E>, Executor<R> {
 
     protected final ConnectionSupplier supplier;
     protected final String sql;
-    protected RowMapper<T> mapper;
-    protected final ThrowingBiFunction<ResultSet, RowMapper<T>, R, SQLException> extractor;
+    protected ThrowingFunction<ResultSet, T, SQLException> mapper;
+    protected final ThrowingBiFunction<ResultSet, ThrowingFunction<ResultSet, T, SQLException>, R, SQLException> extractor;
 
 
-    protected SelectPath(ConnectionSupplier supplier, String sql, ThrowingBiFunction<ResultSet, RowMapper<T>, R, SQLException> extractor) {
+    protected SelectPath(ConnectionSupplier supplier, String sql, ThrowingBiFunction<ResultSet, ThrowingFunction<ResultSet, T, SQLException>, R, SQLException> extractor) {
         this.supplier = supplier;
         this.sql = sql;
         this.extractor = extractor;
     }
 
     @Override
-    public E map(RowMapper<T> mapper) {
+    public E map(ThrowingFunction<ResultSet, T, SQLException> mapper) {
         this.mapper = mapper;
         return selfExecutor();
     }

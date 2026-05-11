@@ -13,15 +13,15 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
-public abstract class BasePreparedStatementPath<B> implements FluentBinder<B> {
+public abstract class BaseStatementPath<S extends PreparedStatement, B> implements FluentBinder<S, B> {
 
-    protected final List<ThrowingConsumer<PreparedStatement, SQLException>> binders = new ArrayList<>();
+    protected final List<ThrowingConsumer<S, SQLException>> binders = new ArrayList<>();
     protected int currentIndex = 1;
 
     protected abstract B self();
 
     @Override
-    public B bind(ThrowingConsumer<PreparedStatement, SQLException> binder) {
+    public B bind(ThrowingConsumer<S, SQLException> binder) {
         binders.add(binder);
         return self();
     }
@@ -315,8 +315,8 @@ public abstract class BasePreparedStatementPath<B> implements FluentBinder<B> {
         return "VARCHAR"; // Default fallback
     }
 
-    protected void applyBinders(PreparedStatement ps) throws SQLException {
-        for (ThrowingConsumer<PreparedStatement, SQLException> binder : binders) {
+    protected void applyBinders(S ps) throws SQLException {
+        for (ThrowingConsumer<S, SQLException> binder : binders) {
             binder.accept(ps);
         }
     }
