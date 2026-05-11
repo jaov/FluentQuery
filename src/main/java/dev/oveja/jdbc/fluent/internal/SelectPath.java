@@ -28,11 +28,15 @@ public abstract class SelectPath<T, R, E extends Executor<R>> implements
     protected RowMapper<T> mapper;
     protected final ThrowingBiFunction<ResultSet, RowMapper<T>, R, SQLException> extractor;
 
+
     protected SelectPath(ConnectionSupplier supplier, String sql, ThrowingBiFunction<ResultSet, RowMapper<T>, R, SQLException> extractor) {
         this.supplier = supplier;
         this.sql = sql;
         this.extractor = extractor;
     }
+
+    // Thank you Joshua Bloch for Effective Java
+    protected abstract E self();
 
     @Override
     public Mapper<ResultSet, T, E> bind(ThrowingConsumer<PreparedStatement, SQLException> binder) {
@@ -41,10 +45,9 @@ public abstract class SelectPath<T, R, E extends Executor<R>> implements
     }
 
     @Override
-    @SuppressWarnings("unchecked")
     public E map(RowMapper<T> mapper) {
         this.mapper = mapper;
-        return (E) this;
+        return self();
     }
 
     @Override
@@ -85,6 +88,11 @@ public abstract class SelectPath<T, R, E extends Executor<R>> implements
                 return list;
             });
         }
+
+        @Override
+        protected ListExecutor<T> self() {
+            return this;
+        }
     }
 
     public static class SelectSinglePath<T> extends SelectPath<T, Optional<T>, Executor<Optional<T>>> {
@@ -95,6 +103,11 @@ public abstract class SelectPath<T, R, E extends Executor<R>> implements
                 }
                 return Optional.empty();
             });
+        }
+
+        @Override
+        protected Executor<Optional<T>> self() {
+            return this;
         }
     }
 }
