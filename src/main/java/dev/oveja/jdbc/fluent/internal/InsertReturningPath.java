@@ -8,6 +8,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -16,10 +17,12 @@ public class InsertReturningPath<T> extends BaseStatementPath<PreparedStatement,
 
     private final ConnectionSupplier supplier;
     private final String sql;
+    private final boolean useGeneratedKeys;
 
-    public InsertReturningPath(ConnectionSupplier supplier, String sql) {
+    public InsertReturningPath(ConnectionSupplier supplier, String sql, boolean useGeneratedKeys) {
         this.supplier = supplier;
         this.sql = sql;
+        this.useGeneratedKeys = useGeneratedKeys;
     }
 
     @Override
@@ -101,13 +104,15 @@ public class InsertReturningPath<T> extends BaseStatementPath<PreparedStatement,
 
     private <R> List<R> executeInternal(ConnectionSupplier s, RowMapper<R> m) throws SQLException {
         Connection con = s.get();
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
+        try (PreparedStatement ps = prepare(con)) {
             applyBinders(ps);
-            boolean hasResultSet = ps.execute();
+            ResultSet rs = executeAndGetResultSet(ps);
             List<R> list = new ArrayList<>();
-            if (hasResultSet) {
-                try (ResultSet rs = ps.getResultSet()) {
+            if (rs != null) {
+                try {
                     while (rs.next()) list.add(m.map(rs));
+                } finally {
+                    rs.close();
                 }
             }
             return list;
@@ -118,17 +123,37 @@ public class InsertReturningPath<T> extends BaseStatementPath<PreparedStatement,
 
     private <R> Optional<R> executeInternalOne(ConnectionSupplier s, RowMapper<R> m) throws SQLException {
         Connection con = s.get();
-        try (PreparedStatement ps = con.prepareStatement(sql)) {
+        try (PreparedStatement ps = prepare(con)) {
             applyBinders(ps);
-            boolean hasResultSet = ps.execute();
-            if (hasResultSet) {
-                try (ResultSet rs = ps.getResultSet()) {
+            ResultSet rs = executeAndGetResultSet(ps);
+            if (rs != null) {
+                try {
                     if (rs.next()) return Optional.of(m.map(rs));
+                } finally {
+                    rs.close();
                 }
             }
             return Optional.empty();
         } finally {
             if (s.shouldClose()) con.close();
+        }
+    }
+
+    private PreparedStatement prepare(Connection con) throws SQLException {
+        if (useGeneratedKeys) {
+            return con.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+        } else {
+            return con.prepareStatement(sql);
+        }
+    }
+
+    private ResultSet executeAndGetResultSet(PreparedStatement ps) throws SQLException {
+        if (useGeneratedKeys) {
+            ps.executeUpdate();
+            return ps.getGeneratedKeys();
+        } else {
+            boolean hasResultSet = ps.execute();
+            return hasResultSet ? ps.getResultSet() : null;
         }
     }
 }

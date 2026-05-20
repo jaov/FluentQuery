@@ -7,7 +7,7 @@ import dev.oveja.jdbc.fluent.api.ListExecutor;
 import dev.oveja.jdbc.fluent.api.QueryBinder;
 import dev.oveja.jdbc.fluent.internal.ConnectionSupplierLoader;
 import dev.oveja.jdbc.fluent.internal.GenericPath;
-import dev.oveja.jdbc.fluent.internal.InsertReturningIdPath;
+import dev.oveja.jdbc.fluent.internal.InsertReturningPath;
 import dev.oveja.jdbc.fluent.internal.DmlPath;
 import dev.oveja.jdbc.fluent.transaction.TransactionStarter;
 
@@ -27,12 +27,12 @@ public final class FluentQuery {
         return new GenericPath<>(supplier, clazz);
     }
 
-    public static <T> InsertReturningIdPath<T> insertReturningId(String sql) {
+    public static <T> InsertReturningPath<T> insertReturningId(String sql) {
         return insertReturningId(ConnectionSupplierLoader.load(), sql);
     }
 
-    public static <T> InsertReturningIdPath<T> insertReturningId(ConnectionSupplier supplier, String sql) {
-        return new InsertReturningIdPath<>(supplier, sql);
+    public static <T> InsertReturningPath<T> insertReturningId(ConnectionSupplier supplier, String sql) {
+        return new InsertReturningPath<>(supplier, sql, true);
     }
 
     public static DmlBinder update(String sql) {

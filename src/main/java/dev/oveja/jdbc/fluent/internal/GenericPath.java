@@ -30,7 +30,7 @@ public class GenericPath <T> implements GenericFlow<T>{
 
     @Override
     public InsertReturningPath<T> insertReturning(String sql) {
-        return new InsertReturningPath<>(this.supplier, sql);
+        return new InsertReturningPath<>(this.supplier, sql, false);
     }
 
     @Override
