@@ -10,6 +10,7 @@ import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.List;
 
+import dev.oveja.jdbc.fluent.api.Executor;
 import org.junit.jupiter.api.Test;
 
 import dev.oveja.jdbc.fluent.ConnectionSupplier;
@@ -124,6 +125,63 @@ public class TransactionTest extends AbstractFluentQueryTest {
         });
         
         assertTrue(realConnection.isClosed(), "Connection MUST be closed by FluentQuery after the transaction block");
+    }
+
+    @Test
+    void testTransactionResult() throws Exception {
+        String name = FluentQuery.transactionResult(supplier, cs -> {
+            FluentQuery.insert(cs, "INSERT INTO users (name) VALUES (?)")
+                    .bind("Alice")
+                    .execute();
+            return "Alice";
+        });
+
+        assertEquals("Alice", name);
+        assertEquals(1, countUsers());
+    }
+
+    @Test
+    void testTransactionResultWithEntity() throws Exception {
+        Executor<User> insertUser = cs -> {
+            int id = FluentQuery.insertReturningIntId(cs, "INSERT INTO users (name, email) VALUES (?, ?)")
+                    .bind("Bob")
+                    .bind("bob@example.com")
+                    .map(rs -> rs.getInt(1)) // Terminate binder with mapper
+                    .fetchOne()
+                    .orElseThrow();
+            return new User(id, "Bob", "bob@example.com");
+        };
+
+        User user = FluentQuery.transactionResult(supplier, insertUser::execute);
+
+        assertEquals("Bob", user.name);
+        assertTrue(user.id > 0);
+        assertEquals(1, countUsers());
+    }
+
+    @Test
+    void testTransactionResultRollback() throws SQLException {
+        assertThrows(RuntimeException.class, () -> {
+            FluentQuery.transactionResult(supplier, cs -> {
+                FluentQuery.insert(cs, "INSERT INTO users (name) VALUES (?)")
+                        .bind("Alice")
+                        .execute();
+                throw new RuntimeException("Rollback");
+            });
+        });
+
+        assertEquals(0, countUsers());
+    }
+
+    static class User {
+        int id;
+        String name;
+        String email;
+        User(int id, String name, String email) {
+            this.id = id;
+            this.name = name;
+            this.email = email;
+        }
     }
 
     private int countUsers() throws SQLException {
