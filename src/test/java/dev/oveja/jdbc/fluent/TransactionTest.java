@@ -142,21 +142,27 @@ public class TransactionTest extends AbstractFluentQueryTest {
 
     @Test
     void testTransactionResultWithEntity() throws Exception {
-        Executor<User> insertUser = cs -> {
-            int id = FluentQuery.insertReturningIntId(cs, "INSERT INTO users (name, email) VALUES (?, ?)")
-                    .bind("Bob")
-                    .bind("bob@example.com")
-                    .map(rs -> rs.getInt(1)) // Terminate binder with mapper
-                    .fetchOne()
-                    .orElseThrow();
+        // Here we use the "Executor Pattern": 
+        // We get a "Query Blueprint" and decide when/how to run it.
+        User user = FluentQuery.transactionResult(supplier, cs -> {
+            int id = insertUser("Bob", "bob@example.com").execute(cs).get(0);
             return new User(id, "Bob", "bob@example.com");
-        };
-
-        User user = FluentQuery.transactionResult(supplier, insertUser::execute);
+        });
 
         assertEquals("Bob", user.name);
         assertTrue(user.id > 0);
         assertEquals(1, countUsers());
+    }
+
+    /**
+     * A "DAO-style" method that returns a Blueprint (ListExecutor).
+     * This method can be used standalone or inside a transaction.
+     */
+    private dev.oveja.jdbc.fluent.api.ListExecutor<Integer> insertUser(String name, String email) {
+        return FluentQuery.insertReturningIntId(supplier, "INSERT INTO users (name, email) VALUES (?, ?)")
+                .bind(name)
+                .bind(email)
+                .map(rs -> rs.getInt(1));
     }
 
     @Test
@@ -186,10 +192,10 @@ public class TransactionTest extends AbstractFluentQueryTest {
 
     private int countUsers() throws SQLException {
         return FluentQuery.forClass(supplier, Integer.class)
-                .select("SELECT COUNT(*) FROM users")
+                .selectOne("SELECT COUNT(*) FROM users")
                 .noBind()
                 .map(rs -> rs.getInt(1))
-                .fetchOne(supplier)
+                .execute(supplier)
                 .orElse(0);
     }
 }

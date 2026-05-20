@@ -1,12 +1,12 @@
 package dev.oveja.jdbc.fluent;
 
-import dev.oveja.jdbc.fluent.api.Executor;
 import org.junit.jupiter.api.Test;
 
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
+import dev.oveja.jdbc.fluent.api.Executor;
 import static org.junit.jupiter.api.Assertions.*;
 
 public class CrudTest extends AbstractFluentQueryTest {
@@ -59,10 +59,10 @@ public class CrudTest extends AbstractFluentQueryTest {
         assertEquals(1, updated);
 
         Optional<String> name = FluentQuery.forClass(supplier, String.class)
-                .select("SELECT name FROM users")
+                .selectOne("SELECT name FROM users")
                 .noBind()
                 .map(rs -> rs.getString(1))
-                .fetchOne();
+                .execute();
 
         assertTrue(name.isPresent());
         assertEquals("New Name", name.get());
@@ -119,8 +119,8 @@ public class CrudTest extends AbstractFluentQueryTest {
                 .insertReturning("CALL INSERT_RETURNING('Alice', 'alice@example.com')")
                 .noBind()
                 .map(rs -> new User(rs.getInt(1), "Alice", "alice@example.com"))
-                .fetchOne()
-                .orElseThrow();
+                .execute()
+                .get(0);
 
         assertEquals("Alice", user.name);
         assertEquals("alice@example.com", user.email);
