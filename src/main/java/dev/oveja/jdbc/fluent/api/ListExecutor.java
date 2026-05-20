@@ -7,13 +7,10 @@ import java.util.Optional;
 
 public interface ListExecutor<T> extends Executor<List<T>> {
     default Optional<T> fetchOne() throws SQLException {
-        List<T> list = execute();
-        return list.isEmpty() ? Optional.empty() : Optional.of(list.get(0));
+        return execute().stream().findFirst();
     }
 
     default Optional<T> fetchOne(ConnectionSupplier supplier) throws SQLException {
-        List<T> list = execute(supplier);
-        return list.isEmpty() ? Optional.empty() : Optional.of(list.get(0));
+        return execute(supplier).stream().findFirst();
     }
 }
-
