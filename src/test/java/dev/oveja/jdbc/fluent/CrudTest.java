@@ -112,6 +112,22 @@ public class CrudTest extends AbstractFluentQueryTest {
     }
 
     @Test
+    void testInsertReturningEntity() throws Exception {
+        setupH2Returning();
+        
+        User user = FluentQuery.forClass(supplier, User.class)
+                .insertReturning("CALL INSERT_RETURNING('Alice', 'alice@example.com')")
+                .noBind()
+                .map(rs -> new User(rs.getInt(1), "Alice", "alice@example.com"))
+                .fetchOne()
+                .orElseThrow();
+
+        assertEquals("Alice", user.name);
+        assertEquals("alice@example.com", user.email);
+        assertTrue(user.id > 0);
+    }
+
+    @Test
     void testAsFunction() throws Exception {
         Executor<List<User>> searchFunc =
                 FluentQuery.forClass(supplier, User.class)

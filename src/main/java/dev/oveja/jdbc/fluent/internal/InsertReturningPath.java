@@ -52,13 +52,17 @@ public class InsertReturningPath<T>
         Connection con = supplier.get();
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             applyBinders(ps);
-            try (ResultSet rs = ps.executeQuery()) {
-                List<T> list = new ArrayList<>();
-                while (rs.next()) {
-                    list.add(mapper.map(rs));
+            boolean hasResultSet = ps.execute();
+            if (hasResultSet) {
+                try (ResultSet rs = ps.getResultSet()) {
+                    List<T> list = new ArrayList<>();
+                    while (rs.next()) {
+                        list.add(mapper.map(rs));
+                    }
+                    return list;
                 }
-                return list;
             }
+            return new ArrayList<>();
         } finally {
             if (supplier.shouldClose()) {
                 con.close();

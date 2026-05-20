@@ -5,6 +5,7 @@ import org.junit.jupiter.api.BeforeEach;
 
 import java.sql.Connection;
 import java.sql.DriverManager;
+import java.sql.PreparedStatement;
 import java.sql.SQLException;
 import java.sql.Statement;
 
@@ -18,5 +19,19 @@ public abstract class AbstractFluentQueryTest {
             st.execute("DROP ALL OBJECTS");
             st.execute("CREATE TABLE users (id INT PRIMARY KEY AUTO_INCREMENT, name VARCHAR(255), email VARCHAR(255))");
         }
+    }
+
+    protected void setupH2Returning() throws SQLException {
+        try (Connection con = supplier.get(); Statement st = con.createStatement()) {
+            st.execute("CREATE ALIAS IF NOT EXISTS INSERT_RETURNING FOR \"dev.oveja.jdbc.fluent.AbstractFluentQueryTest.insertReturning\"");
+        }
+    }
+
+    public static java.sql.ResultSet insertReturning(Connection conn, String name, String email) throws SQLException {
+        PreparedStatement ps = conn.prepareStatement("INSERT INTO users (name, email) VALUES (?, ?)", Statement.RETURN_GENERATED_KEYS);
+        ps.setString(1, name);
+        ps.setString(2, email);
+        ps.executeUpdate();
+        return ps.getGeneratedKeys();
     }
 }
