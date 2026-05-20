@@ -1,8 +1,6 @@
 package dev.oveja.jdbc.fluent;
 
-import dev.oveja.jdbc.fluent.api.Binder;
 import dev.oveja.jdbc.fluent.api.DmlBinder;
-import dev.oveja.jdbc.fluent.api.Executor;
 import dev.oveja.jdbc.fluent.api.GenericFlow;
 import dev.oveja.jdbc.fluent.api.ListExecutor;
 import dev.oveja.jdbc.fluent.api.QueryBinder;
@@ -10,9 +8,9 @@ import dev.oveja.jdbc.fluent.internal.ConnectionSupplierLoader;
 import dev.oveja.jdbc.fluent.internal.GenericPath;
 import dev.oveja.jdbc.fluent.internal.InsertReturningIdPath;
 import dev.oveja.jdbc.fluent.internal.DmlPath;
+import dev.oveja.jdbc.fluent.transaction.TransactionStarter;
 
 import java.sql.Connection;
-import java.sql.PreparedStatement;
 import java.sql.SQLException;
 
 public final class FluentQuery {
@@ -75,33 +73,28 @@ public final class FluentQuery {
         return new DmlPath(supplier, sql);
     }
 
+    public static TransactionStarter transaction() {
+        return transaction(ConnectionSupplierLoader.load());
+    }
+
+    public static TransactionStarter transaction(ConnectionSupplier supplier) {
+        return new TransactionFlow<>(supplier);
+    }
+
     public static void transaction(TransactionalVoidAction action) throws Exception {
-        transaction(ConnectionSupplierLoader.load(), action);
+        transaction().run(action).execute();
     }
 
     public static void transaction(ConnectionSupplier supplier, TransactionalVoidAction action) throws Exception {
-        transactionResult(supplier, (cs) -> {
-            action.run(cs);
-            return null;
-        });
+        transaction(supplier).run(action).execute();
     }
 
     public static <R> R transactionResult(TransactionalAction<R> action) throws Exception {
-        return transactionResult(ConnectionSupplierLoader.load(), action);
+        return transaction().returnUsing(action).execute();
     }
 
     public static <R> R transactionResult(ConnectionSupplier supplier, TransactionalAction<R> action) throws Exception {
-        try (Connection con = supplier.get()) {
-            con.setAutoCommit(false);
-            try {
-                R result = action.run(ConnectionSupplier.borrowed(con));
-                con.commit();
-                return result;
-            } catch (Exception e) {
-                con.rollback();
-                throw e;
-            }
-        }
+        return transaction(supplier).returnUsing(action).execute();
     }
 
 }
