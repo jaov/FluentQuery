@@ -9,7 +9,7 @@ public interface GenericFlow <T>{
 
     QueryBinder<T, Executor<Optional<T>>> selectOne(String sql);
 
-    QueryBinder<T, ListExecutor<T>> insertReturning(String sql);
+    dev.oveja.jdbc.fluent.internal.InsertReturningPath<T> insertReturning(String sql);
 
     dev.oveja.jdbc.fluent.internal.CallPath<T> call(String sql);
 }

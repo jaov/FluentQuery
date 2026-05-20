@@ -29,8 +29,8 @@ public class GenericPath <T> implements GenericFlow<T>{
     }
 
     @Override
-    public QueryBinder<T, ListExecutor<T>> insertReturning(String sql) {
-        return new InsertReturningPath<>(this.supplier, this.clazz, sql);
+    public InsertReturningPath<T> insertReturning(String sql) {
+        return new InsertReturningPath<>(this.supplier, sql);
     }
 
     @Override

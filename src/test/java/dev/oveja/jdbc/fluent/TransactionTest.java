@@ -145,7 +145,7 @@ public class TransactionTest extends AbstractFluentQueryTest {
         // Here we use the "Executor Pattern": 
         // We get a "Query Blueprint" and decide when/how to run it.
         User user = FluentQuery.transactionResult(supplier, cs -> {
-            int id = insertUser("Bob", "bob@example.com").execute(cs).get(0);
+            int id = insertUser("Bob", "bob@example.com").execute(cs).orElseThrow();
             return new User(id, "Bob", "bob@example.com");
         });
 
@@ -155,14 +155,14 @@ public class TransactionTest extends AbstractFluentQueryTest {
     }
 
     /**
-     * A "DAO-style" method that returns a Blueprint (ListExecutor).
+     * A "DAO-style" method that returns a Blueprint (Executor of Optional).
      * This method can be used standalone or inside a transaction.
      */
-    private dev.oveja.jdbc.fluent.api.ListExecutor<Integer> insertUser(String name, String email) {
-        return FluentQuery.insertReturningIntId(supplier, "INSERT INTO users (name, email) VALUES (?, ?)")
+    private dev.oveja.jdbc.fluent.api.Executor<java.util.Optional<Integer>> insertUser(String name, String email) {
+        return FluentQuery.<Integer>insertReturningId(supplier, "INSERT INTO users (name, email) VALUES (?, ?)")
                 .bind(name)
                 .bind(email)
-                .map(rs -> rs.getInt(1));
+                .mapOneInt();
     }
 
     @Test
