@@ -75,16 +75,28 @@ public final class FluentQuery {
         return new DmlPath(supplier, sql);
     }
 
-    public static void transaction(ThrowingConsumer<BorrowedConnectionSupplier, Exception> action) throws Exception {
+    public static void transaction(TransactionalVoidAction action) throws Exception {
         transaction(ConnectionSupplierLoader.load(), action);
     }
 
-    public static void transaction(ConnectionSupplier supplier, ThrowingConsumer<BorrowedConnectionSupplier, Exception> action) throws Exception {
+    public static void transaction(ConnectionSupplier supplier, TransactionalVoidAction action) throws Exception {
+        transactionResult(supplier, (cs) -> {
+            action.run(cs);
+            return null;
+        });
+    }
+
+    public static <R> R transactionResult(TransactionalAction<R> action) throws Exception {
+        return transactionResult(ConnectionSupplierLoader.load(), action);
+    }
+
+    public static <R> R transactionResult(ConnectionSupplier supplier, TransactionalAction<R> action) throws Exception {
         try (Connection con = supplier.get()) {
             con.setAutoCommit(false);
             try {
-                action.accept(ConnectionSupplier.borrowed(con));
+                R result = action.run(ConnectionSupplier.borrowed(con));
                 con.commit();
+                return result;
             } catch (Exception e) {
                 con.rollback();
                 throw e;

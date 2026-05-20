@@ -2,9 +2,9 @@ package dev.oveja.jdbc.fluent.internal;
 
 import dev.oveja.jdbc.fluent.api.QueryBinder;
 import dev.oveja.jdbc.fluent.api.ListExecutor;
-import dev.oveja.jdbc.fluent.ThrowingFunction;
-import dev.oveja.jdbc.fluent.ConnectionSupplier;
 import dev.oveja.jdbc.fluent.RowMapper;
+import dev.oveja.jdbc.fluent.ResultMapper;
+import dev.oveja.jdbc.fluent.ConnectionSupplier;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -20,9 +20,9 @@ public class InsertReturningIdPath<T>
 
     private final ConnectionSupplier supplier;
     private final String sql;
-    private ThrowingFunction<ResultSet, T, SQLException> mapper;
+    private RowMapper<T> mapper;
 
-    public InsertReturningIdPath(ConnectionSupplier supplier, Class<T> ignoredClazz, ThrowingFunction<ResultSet, T, SQLException> mapper, String sql) {
+    public InsertReturningIdPath(ConnectionSupplier supplier, Class<T> ignoredClazz, RowMapper<T> mapper, String sql) {
         this.supplier = supplier;
         this.mapper = mapper;
         this.sql = sql;
@@ -34,7 +34,12 @@ public class InsertReturningIdPath<T>
     }
 
     @Override
-    public ListExecutor<T> map(ThrowingFunction<ResultSet, T, SQLException> mapper) {
+    public ListExecutor<T> map(ResultMapper<ResultSet, T> mapper) {
+        return map((RowMapper<T>) mapper::map);
+    }
+
+    @Override
+    public ListExecutor<T> map(RowMapper<T> mapper) {
         this.mapper = mapper;
         return this;
     }
@@ -53,7 +58,7 @@ public class InsertReturningIdPath<T>
             try (ResultSet rs = ps.getGeneratedKeys()) {
                 List<T> list = new ArrayList<>();
                 while (rs.next()) {
-                    list.add(mapper.apply(rs));
+                    list.add(mapper.map(rs));
                 }
                 return list;
             }

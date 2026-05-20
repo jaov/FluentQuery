@@ -1,5 +1,6 @@
 package dev.oveja.jdbc.fluent;
 
+import dev.oveja.jdbc.fluent.api.Executor;
 import org.junit.jupiter.api.Test;
 
 import java.sql.SQLException;
@@ -112,12 +113,11 @@ public class CrudTest extends AbstractFluentQueryTest {
 
     @Test
     void testAsFunction() throws Exception {
-        ThrowingFunction<ConnectionSupplier, List<User>, SQLException> searchFunc =
+        Executor<List<User>> searchFunc =
                 FluentQuery.forClass(supplier, User.class)
                         .select("SELECT * FROM users WHERE name = ?")
                         .bind(ps -> ps.setString(1, "Alice"))
-                        .map(rs -> new User(rs.getInt("id"), rs.getString("name"), rs.getString("email")))
-                        .asFunction();
+                        .map(rs -> new User(rs.getInt("id"), rs.getString("name"), rs.getString("email")));
 
         // Setup
         FluentQuery.insert(supplier, "INSERT INTO users (name) VALUES (?)")
@@ -125,7 +125,7 @@ public class CrudTest extends AbstractFluentQueryTest {
                 .execute();
 
         // Execute using function
-        List<User> results = searchFunc.apply(supplier);
+        List<User> results = searchFunc.execute(supplier);
         assertEquals(1, results.size());
         assertEquals("Alice", results.get(0).name);
     }

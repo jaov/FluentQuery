@@ -1,10 +1,9 @@
 package dev.oveja.jdbc.fluent.internal;
 
 import dev.oveja.jdbc.fluent.api.*;
-import dev.oveja.jdbc.fluent.ThrowingBiFunction;
-import dev.oveja.jdbc.fluent.ThrowingFunction;
-import dev.oveja.jdbc.fluent.ConnectionSupplier;
 import dev.oveja.jdbc.fluent.RowMapper;
+import dev.oveja.jdbc.fluent.ResultMapper;
+import dev.oveja.jdbc.fluent.ConnectionSupplier;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
@@ -20,18 +19,23 @@ public abstract class SelectPath<T, R, E extends Executor<R>>
 
     protected final ConnectionSupplier supplier;
     protected final String sql;
-    protected ThrowingFunction<ResultSet, T, SQLException> mapper;
-    protected final ThrowingBiFunction<ResultSet, ThrowingFunction<ResultSet, T, SQLException>, R, SQLException> extractor;
+    protected RowMapper<T> mapper;
+    protected final ResultSetExtractor<T, R> extractor;
 
 
-    protected SelectPath(ConnectionSupplier supplier, String sql, ThrowingBiFunction<ResultSet, ThrowingFunction<ResultSet, T, SQLException>, R, SQLException> extractor) {
+    protected SelectPath(ConnectionSupplier supplier, String sql, ResultSetExtractor<T, R> extractor) {
         this.supplier = supplier;
         this.sql = sql;
         this.extractor = extractor;
     }
 
     @Override
-    public E map(ThrowingFunction<ResultSet, T, SQLException> mapper) {
+    public E map(ResultMapper<ResultSet, T> mapper) {
+        return map((RowMapper<T>) mapper::map);
+    }
+
+    @Override
+    public E map(RowMapper<T> mapper) {
         this.mapper = mapper;
         return selfExecutor();
     }
@@ -49,7 +53,7 @@ public abstract class SelectPath<T, R, E extends Executor<R>>
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             applyBinders(ps);
             try (ResultSet rs = ps.executeQuery()) {
-                return extractor.apply(rs, mapper);
+                return extractor.extract(rs, mapper);
             }
         } finally {
             if (supplier.shouldClose()) {
@@ -71,7 +75,7 @@ public abstract class SelectPath<T, R, E extends Executor<R>>
             super(supplier, sql, (rs, mapper) -> {
                 List<T> list = new ArrayList<>();
                 while (rs.next()) {
-                    list.add(mapper.apply(rs));
+                    list.add(mapper.map(rs));
                 }
                 return list;
             });
@@ -92,7 +96,7 @@ public abstract class SelectPath<T, R, E extends Executor<R>>
         public SelectSinglePath(ConnectionSupplier supplier, String sql) {
             super(supplier, sql, (rs, mapper) -> {
                 if (rs.next()) {
-                    return Optional.of(mapper.apply(rs));
+                    return Optional.of(mapper.map(rs));
                 }
                 return Optional.empty();
             });

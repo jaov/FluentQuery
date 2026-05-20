@@ -1,7 +1,7 @@
 package dev.oveja.jdbc.fluent.api;
 
-import dev.oveja.jdbc.fluent.ThrowingFunction;
-
+import dev.oveja.jdbc.fluent.CallableMapper;
+import dev.oveja.jdbc.fluent.ResultMapper;
 import java.sql.CallableStatement;
 import java.sql.SQLException;
 import java.sql.SQLType;
@@ -15,5 +15,9 @@ public interface CallBinder<T> extends
     CallBinder<T> bindOut(SQLType sqlType);
     
     @Override
-    Executor<T> map(ThrowingFunction<CallableStatement, T, SQLException> mapper);
+    default Executor<T> map(ResultMapper<CallableStatement, T> mapper) {
+        return map((CallableMapper<T>) mapper::map);
+    }
+
+    Executor<T> map(CallableMapper<T> mapper);
 }

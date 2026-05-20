@@ -1,14 +1,15 @@
 package dev.oveja.jdbc.fluent.api;
 
-import dev.oveja.jdbc.fluent.ThrowingFunction;
 import dev.oveja.jdbc.fluent.ConnectionSupplier;
+import dev.oveja.jdbc.fluent.internal.ConnectionSupplierLoader;
 import java.sql.SQLException;
 
+@FunctionalInterface
 public interface Executor<R> {
-    R execute() throws SQLException;
-    R execute(ConnectionSupplier supplier) throws SQLException;
-
-    default ThrowingFunction<ConnectionSupplier, R, SQLException> asFunction() {
-        return this::execute;
+    
+    default R execute() throws SQLException {
+        return execute(ConnectionSupplierLoader.load());
     }
+
+    R execute(ConnectionSupplier supplier) throws SQLException;
 }

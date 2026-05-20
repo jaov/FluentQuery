@@ -1,8 +1,9 @@
 package dev.oveja.jdbc.fluent.internal;
 
-import dev.oveja.jdbc.fluent.ThrowingFunction;
 import dev.oveja.jdbc.fluent.api.CallBinder;
 import dev.oveja.jdbc.fluent.api.Executor;
+import dev.oveja.jdbc.fluent.CallableMapper;
+import dev.oveja.jdbc.fluent.ResultMapper;
 import dev.oveja.jdbc.fluent.ConnectionSupplier;
 
 import java.sql.CallableStatement;
@@ -16,7 +17,7 @@ public class CallPath<T>
 
     private final String sql;
     private final ConnectionSupplier supplier;
-    private ThrowingFunction<CallableStatement, T, SQLException> mapper;
+    private CallableMapper<T> mapper;
 
     public CallPath(ConnectionSupplier supplier, Class<T> ignoredClass, String sql) {
         this.supplier = supplier;
@@ -41,7 +42,12 @@ public class CallPath<T>
     }
 
     @Override
-    public Executor<T> map(ThrowingFunction<CallableStatement, T, SQLException> mapper) {
+    public Executor<T> map(ResultMapper<CallableStatement, T> mapper) {
+        return map((CallableMapper<T>) mapper::map);
+    }
+
+    @Override
+    public Executor<T> map(CallableMapper<T> mapper) {
         this.mapper = mapper;
         return this;
     }
@@ -57,7 +63,7 @@ public class CallPath<T>
         try (CallableStatement stmt = con.prepareCall(sql)) {
             applyBinders(stmt);
             stmt.execute();
-            return mapper != null ? mapper.apply(stmt) : null;
+            return mapper != null ? mapper.map(stmt) : null;
         } finally {
             if (supplier.shouldClose()) {
                 con.close();

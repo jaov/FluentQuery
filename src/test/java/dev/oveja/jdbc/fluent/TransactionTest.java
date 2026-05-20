@@ -131,8 +131,7 @@ public class TransactionTest extends AbstractFluentQueryTest {
                 .select("SELECT COUNT(*) FROM users")
                 .noBind()
                 .map(rs -> rs.getInt(1))
-                .asFetchOneFunction()
-                .apply(supplier)
+                .fetchOne(supplier)
                 .orElse(0);
     }
 }

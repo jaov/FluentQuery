@@ -4,7 +4,8 @@ import java.sql.Connection;
 import java.sql.SQLException;
 
 @FunctionalInterface
-public interface ConnectionSupplier extends ThrowingSupplier<Connection,SQLException> {
+public interface ConnectionSupplier {
+    Connection get() throws SQLException;
 
     default boolean shouldClose() {
         return true;

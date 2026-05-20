@@ -1,6 +1,6 @@
 package dev.oveja.jdbc.fluent.internal;
 
-import dev.oveja.jdbc.fluent.ThrowingConsumer;
+import dev.oveja.jdbc.fluent.StatementBinder;
 import dev.oveja.jdbc.fluent.api.FluentBinder;
 
 import java.io.InputStream;
@@ -15,13 +15,13 @@ import java.util.List;
 
 public abstract class BaseStatementPath<S extends PreparedStatement, B> implements FluentBinder<S, B> {
 
-    protected final List<ThrowingConsumer<S, SQLException>> binders = new ArrayList<>();
+    protected final List<StatementBinder<S>> binders = new ArrayList<>();
     protected int currentIndex = 1;
 
     protected abstract B self();
 
     @Override
-    public B bind(ThrowingConsumer<S, SQLException> binder) {
+    public B bind(StatementBinder<S> binder) {
         binders.add(binder);
         return self();
     }
@@ -316,8 +316,8 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
 
     protected void applyBinders(S ps) throws SQLException {
-        for (ThrowingConsumer<S, SQLException> binder : binders) {
-            binder.accept(ps);
+        for (StatementBinder<S> binder : binders) {
+            binder.bind(ps);
         }
     }
 }
