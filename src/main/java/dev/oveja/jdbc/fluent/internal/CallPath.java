@@ -1,9 +1,9 @@
 package dev.oveja.jdbc.fluent.internal;
 
 import dev.oveja.jdbc.fluent.api.CallBinder;
+import dev.oveja.jdbc.fluent.api.CallMapper;
 import dev.oveja.jdbc.fluent.api.Executor;
 import dev.oveja.jdbc.fluent.CallableMapper;
-import dev.oveja.jdbc.fluent.ResultMapper;
 import dev.oveja.jdbc.fluent.ConnectionSupplier;
 
 import java.sql.CallableStatement;
@@ -13,7 +13,7 @@ import java.sql.SQLType;
 
 public class CallPath<T> 
         extends BaseStatementPath<CallableStatement, CallBinder<T>>
-        implements CallBinder<T> {
+        implements CallBinder<T>, CallMapper<T>, Executor<T> {
 
     private final String sql;
     private final ConnectionSupplier supplier;
@@ -42,14 +42,35 @@ public class CallPath<T>
     }
 
     @Override
-    public Executor<T> map(ResultMapper<CallableStatement, T> mapper) {
-        return map((CallableMapper<T>) mapper::map);
+    public CallMapper<T> noParams() {
+        return this;
     }
 
     @Override
     public Executor<T> map(CallableMapper<T> mapper) {
         this.mapper = mapper;
         return this;
+    }
+
+    @Override
+    public Executor<Void> voidCall() {
+        this.mapper = null;
+        return new Executor<Void>() {
+            @Override
+            public Void execute(ConnectionSupplier supplier) throws SQLException {
+                return CallPath.this.runVoid(supplier);
+            }
+
+            @Override
+            public Void execute() throws SQLException {
+                return execute(CallPath.this.supplier);
+            }
+        };
+    }
+
+    private Void runVoid(ConnectionSupplier supplier) throws SQLException {
+        this.execute(supplier);
+        return null;
     }
 
     @Override
