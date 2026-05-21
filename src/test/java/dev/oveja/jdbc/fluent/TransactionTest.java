@@ -192,9 +192,9 @@ public class TransactionTest extends AbstractFluentQueryTest {
 
     private int countUsers() throws SQLException {
         return FluentQuery.forClass(supplier, Integer.class)
-                .selectOne("SELECT COUNT(*) FROM users")
+                .select("SELECT COUNT(*) FROM users")
                 .noBind()
-                .map(rs -> rs.getInt(1))
+                .mapOne(rs -> rs.getInt(1))
                 .execute(supplier)
                 .orElse(0);
     }

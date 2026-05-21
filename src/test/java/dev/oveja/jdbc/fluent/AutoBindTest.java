@@ -49,9 +49,9 @@ public class AutoBindTest extends AbstractFluentQueryTest {
         assertEquals(1, updated);
 
         String name = FluentQuery.forClass(supplier, String.class)
-                .selectOne("SELECT name FROM test_users WHERE id = 1")
+                .select("SELECT name FROM test_users WHERE id = 1")
                 .noBind()
-                .map(rs -> rs.getString(1))
+                .mapOne(rs -> rs.getString(1))
                 .execute()
                 .orElseThrow();
 
@@ -68,9 +68,9 @@ public class AutoBindTest extends AbstractFluentQueryTest {
                 .execute();
 
         LocalDateTime createdAt = FluentQuery.forClass(supplier, LocalDateTime.class)
-                .selectOne("SELECT created_at FROM test_users WHERE id = 2")
+                .select("SELECT created_at FROM test_users WHERE id = 2")
                 .noBind()
-                .map(rs -> rs.getTimestamp(1).toLocalDateTime())
+                .mapOne(rs -> rs.getTimestamp(1).toLocalDateTime())
                 .execute()
                 .orElseThrow();
 
@@ -95,9 +95,9 @@ public class AutoBindTest extends AbstractFluentQueryTest {
                 .execute();
 
         FluentQuery.forClass(supplier, String.class)
-                .selectOne("SELECT d, t, ts FROM temporal_test")
+                .select("SELECT d, t, ts FROM temporal_test")
                 .noBind()
-                .map(rs -> {
+                .mapOne(rs -> {
                     assertEquals(date, rs.getDate(1).toLocalDate());
                     assertEquals(time, rs.getTime(2).toLocalTime());
                     assertEquals(dateTime, rs.getTimestamp(3).toLocalDateTime());
@@ -120,9 +120,9 @@ public class AutoBindTest extends AbstractFluentQueryTest {
                 .execute();
 
         Object[] resultTags = (Object[]) FluentQuery.forClass(supplier, Object.class)
-                .selectOne("SELECT tags FROM tags_table WHERE id = 1")
+                .select("SELECT tags FROM tags_table WHERE id = 1")
                 .noBind()
-                .map(rs -> rs.getArray(1).getArray())
+                .mapOne(rs -> rs.getArray(1).getArray())
                 .execute()
                 .orElseThrow();
 
@@ -144,9 +144,9 @@ public class AutoBindTest extends AbstractFluentQueryTest {
                 .execute();
 
         Object[] resultTags = (Object[]) FluentQuery.forClass(supplier, Object.class)
-                .selectOne("SELECT tags FROM collection_tags WHERE id = 2")
+                .select("SELECT tags FROM collection_tags WHERE id = 2")
                 .noBind()
-                .map(rs -> rs.getArray(1).getArray())
+                .mapOne(rs -> rs.getArray(1).getArray())
                 .execute()
                 .orElseThrow();
 

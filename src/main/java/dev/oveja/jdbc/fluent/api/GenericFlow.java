@@ -2,12 +2,9 @@ package dev.oveja.jdbc.fluent.api;
 
 import dev.oveja.jdbc.fluent.ConnectionSupplier;
 import java.sql.PreparedStatement;
-import java.util.Optional;
 
 public interface GenericFlow <T>{
-    QueryBinder<T, ListExecutor<T>> select(String sql);
-
-    QueryBinder<T, Executor<Optional<T>>> selectOne(String sql);
+    dev.oveja.jdbc.fluent.internal.SelectPath<T> select(String sql);
 
     dev.oveja.jdbc.fluent.internal.InsertReturningPath<T> insertReturning(String sql);
 
