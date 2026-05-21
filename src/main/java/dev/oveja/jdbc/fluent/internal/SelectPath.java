@@ -3,7 +3,6 @@ package dev.oveja.jdbc.fluent.internal;
 import dev.oveja.jdbc.fluent.api.Executor;
 import dev.oveja.jdbc.fluent.api.ListExecutor;
 import dev.oveja.jdbc.fluent.RowMapper;
-import dev.oveja.jdbc.fluent.ResultMapper;
 import dev.oveja.jdbc.fluent.ConnectionSupplier;
 
 import java.sql.Connection;
@@ -28,10 +27,6 @@ public class SelectPath<T>
     @Override
     protected SelectPath<T> self() {
         return this;
-    }
-
-    public ListExecutor<T> map(ResultMapper<ResultSet, T> mapper) {
-        return map((RowMapper<T>) mapper::map);
     }
 
     public ListExecutor<T> map(RowMapper<T> mapper) {
@@ -60,10 +55,6 @@ public class SelectPath<T>
                 }
             }
         };
-    }
-
-    public Executor<Optional<T>> mapOne(ResultMapper<ResultSet, T> mapper) {
-        return mapOne((RowMapper<T>) mapper::map);
     }
 
     public Executor<Optional<T>> mapOne(RowMapper<T> mapper) {
