@@ -5,5 +5,5 @@ import java.sql.SQLException;
 
 @FunctionalInterface
 public interface CallableMapper<T> {
-    T map(java.sql.CallableStatement cs) throws SQLException;
+    T map(CallableStatement cs) throws SQLException;
 }

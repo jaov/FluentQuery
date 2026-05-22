@@ -1,14 +1,17 @@
 package dev.oveja.jdbc.fluent;
 
-import org.junit.jupiter.api.BeforeEach;
-import org.junit.jupiter.api.Test;
-
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.Arrays;
 import java.util.List;
+
+
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
@@ -53,7 +56,7 @@ public class AutoBindTest extends AbstractFluentQueryTest {
                 .noBind()
                 .mapOne(rs -> rs.getString(1))
                 .execute()
-                .orElseThrow();
+                .get();
 
         assertEquals("Johnny", name);
     }
@@ -72,7 +75,7 @@ public class AutoBindTest extends AbstractFluentQueryTest {
                 .noBind()
                 .mapOne(rs -> rs.getTimestamp(1).toLocalDateTime())
                 .execute()
-                .orElseThrow();
+                .get();
 
         assertEquals(now, createdAt);
     }
@@ -84,9 +87,9 @@ public class AutoBindTest extends AbstractFluentQueryTest {
             st.execute("CREATE TABLE temporal_test (d DATE, t TIME, ts TIMESTAMP)");
         }
 
-        java.time.LocalDate date = java.time.LocalDate.of(2026, 5, 11);
-        java.time.LocalTime time = java.time.LocalTime.of(14, 30, 0);
-        java.time.LocalDateTime dateTime = java.time.LocalDateTime.of(2026, 5, 11, 14, 30, 0);
+        LocalDate date = LocalDate.of(2026, 5, 11);
+        LocalTime time = LocalTime.of(14, 30, 0);
+        LocalDateTime dateTime = LocalDateTime.of(2026, 5, 11, 14, 30, 0);
 
         FluentQuery.insert(supplier, "INSERT INTO temporal_test VALUES (?, ?, ?)")
                 .bind(date)     // setDate
@@ -124,7 +127,7 @@ public class AutoBindTest extends AbstractFluentQueryTest {
                 .noBind()
                 .mapOne(rs -> rs.getArray(1).getArray())
                 .execute()
-                .orElseThrow();
+                .get();
 
         assertEquals(3, resultTags.length);
         assertEquals("java", resultTags[0]);
@@ -148,9 +151,10 @@ public class AutoBindTest extends AbstractFluentQueryTest {
                 .noBind()
                 .mapOne(rs -> rs.getArray(1).getArray())
                 .execute()
-                .orElseThrow();
+                .get();
 
         assertEquals(2, resultTags.length);
         assertEquals("a", resultTags[0]);
+        assertEquals("b",resultTags[1]);
     }
 }

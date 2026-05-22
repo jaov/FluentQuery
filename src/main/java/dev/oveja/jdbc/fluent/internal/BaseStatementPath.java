@@ -1,8 +1,5 @@
 package dev.oveja.jdbc.fluent.internal;
 
-import dev.oveja.jdbc.fluent.StatementBinder;
-import dev.oveja.jdbc.fluent.api.FluentBinder;
-
 import java.io.InputStream;
 import java.io.Reader;
 import java.math.BigDecimal;
@@ -12,6 +9,10 @@ import java.time.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+
+
+import dev.oveja.jdbc.fluent.StatementBinder;
+import dev.oveja.jdbc.fluent.api.FluentBinder;
 
 public abstract class BaseStatementPath<S extends PreparedStatement, B> implements FluentBinder<S, B> {
 
@@ -309,9 +310,9 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
         if (componentType == Float.class || componentType == float.class) return "REAL";
         if (componentType == Boolean.class || componentType == boolean.class) return "BOOLEAN";
         if (componentType == BigDecimal.class) return "NUMERIC";
-        if (componentType == java.sql.Date.class || componentType == LocalDate.class) return "DATE";
-        if (componentType == java.sql.Time.class || componentType == LocalTime.class) return "TIME";
-        if (componentType == java.sql.Timestamp.class || componentType == LocalDateTime.class) return "TIMESTAMP";
+        if (componentType == Date.class || componentType == LocalDate.class) return "DATE";
+        if (componentType == Time.class || componentType == LocalTime.class) return "TIME";
+        if (componentType == Timestamp.class || componentType == LocalDateTime.class) return "TIMESTAMP";
         return "VARCHAR"; // Default fallback
     }
 

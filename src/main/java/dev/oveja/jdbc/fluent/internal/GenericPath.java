@@ -1,9 +1,9 @@
 package dev.oveja.jdbc.fluent.internal;
 
-import dev.oveja.jdbc.fluent.api.*;
 import dev.oveja.jdbc.fluent.ConnectionSupplier;
+import dev.oveja.jdbc.fluent.api.*;
 
-public class GenericPath <T> implements GenericFlow<T>{
+public class GenericPath<T> implements GenericFlow<T> {
 
     private final ConnectionSupplier supplier;
     private final Class<T> clazz;

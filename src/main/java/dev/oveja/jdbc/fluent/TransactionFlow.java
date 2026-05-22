@@ -1,12 +1,13 @@
 package dev.oveja.jdbc.fluent;
 
-import dev.oveja.jdbc.fluent.transaction.TransactionActionStep;
-import dev.oveja.jdbc.fluent.transaction.TransactionStarter;
-import dev.oveja.jdbc.fluent.transaction.TransactionTerminalStep;
-
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.function.Consumer;
+
+
+import dev.oveja.jdbc.fluent.transaction.TransactionActionStep;
+import dev.oveja.jdbc.fluent.transaction.TransactionStarter;
+import dev.oveja.jdbc.fluent.transaction.TransactionTerminalStep;
 
 public class TransactionFlow<R> implements TransactionStarter, TransactionActionStep, TransactionTerminalStep<R> {
 

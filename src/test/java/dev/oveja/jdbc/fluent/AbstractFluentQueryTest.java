@@ -1,13 +1,10 @@
 package dev.oveja.jdbc.fluent;
 
+import java.sql.*;
+
+
 import dev.oveja.jdbc.fluent.ConnectionSupplier;
 import org.junit.jupiter.api.BeforeEach;
-
-import java.sql.Connection;
-import java.sql.DriverManager;
-import java.sql.PreparedStatement;
-import java.sql.SQLException;
-import java.sql.Statement;
 
 public abstract class AbstractFluentQueryTest {
     protected static final String URL = "jdbc:h2:mem:test;DB_CLOSE_DELAY=-1";
@@ -27,7 +24,7 @@ public abstract class AbstractFluentQueryTest {
         }
     }
 
-    public static java.sql.ResultSet insertReturning(Connection conn, String name, String email) throws SQLException {
+    public static ResultSet insertReturning(Connection conn, String name, String email) throws SQLException {
         PreparedStatement ps = conn.prepareStatement("INSERT INTO users (name, email) VALUES (?, ?)", Statement.RETURN_GENERATED_KEYS);
         ps.setString(1, name);
         ps.setString(2, email);

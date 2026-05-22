@@ -39,6 +39,26 @@
     <build>
         <plugins>
             <plugin>
+                <groupId>org.openrewrite.maven</groupId>
+                <artifactId>rewrite-maven-plugin</artifactId>
+                <version>5.45.0</version>
+                <configuration>
+                    <activeRecipes>
+                        <recipe>org.openrewrite.java.ShortenFullyQualifiedTypeReferences</recipe>
+                        <recipe>org.openrewrite.java.OrderImports</recipe>
+                    </activeRecipes>
+                </configuration>
+                <executions>
+                    <execution>
+                        <id>rewrite</id>
+                        <phase>process-sources</phase>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>3.1.2</version>

@@ -1,17 +1,18 @@
 package dev.oveja.jdbc.fluent.internal;
 
-import dev.oveja.jdbc.fluent.api.CallBinder;
-import dev.oveja.jdbc.fluent.api.CallMapper;
-import dev.oveja.jdbc.fluent.api.Executor;
-import dev.oveja.jdbc.fluent.CallableMapper;
-import dev.oveja.jdbc.fluent.ConnectionSupplier;
-
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLType;
 
-public class CallPath<T> 
+
+import dev.oveja.jdbc.fluent.CallableMapper;
+import dev.oveja.jdbc.fluent.ConnectionSupplier;
+import dev.oveja.jdbc.fluent.api.CallBinder;
+import dev.oveja.jdbc.fluent.api.CallMapper;
+import dev.oveja.jdbc.fluent.api.Executor;
+
+public class CallPath<T>
         extends BaseStatementPath<CallableStatement, CallBinder<T>>
         implements CallBinder<T>, CallMapper<T>, Executor<T> {
 

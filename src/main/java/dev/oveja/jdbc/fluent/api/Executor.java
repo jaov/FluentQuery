@@ -1,7 +1,9 @@
 package dev.oveja.jdbc.fluent.api;
 
-import dev.oveja.jdbc.fluent.ConnectionSupplier;
 import java.sql.SQLException;
+
+
+import dev.oveja.jdbc.fluent.ConnectionSupplier;
 
 public interface Executor<R> {
     R execute() throws SQLException;

@@ -1,9 +1,10 @@
 package dev.oveja.jdbc.fluent.internal;
 
-import dev.oveja.jdbc.fluent.ConnectionSupplier;
-
 import java.util.Iterator;
 import java.util.ServiceLoader;
+
+
+import dev.oveja.jdbc.fluent.ConnectionSupplier;
 
 public class ConnectionSupplierLoader {
     public static ConnectionSupplier load() {

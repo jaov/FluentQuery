@@ -1,12 +1,17 @@
 package dev.oveja.jdbc.fluent.api;
 
-import dev.oveja.jdbc.fluent.ConnectionSupplier;
 import java.sql.PreparedStatement;
 
-public interface GenericFlow <T>{
-    dev.oveja.jdbc.fluent.internal.SelectPath<T> select(String sql);
 
-    dev.oveja.jdbc.fluent.internal.InsertReturningPath<T> insertReturning(String sql);
+import dev.oveja.jdbc.fluent.ConnectionSupplier;
+import dev.oveja.jdbc.fluent.internal.CallPath;
+import dev.oveja.jdbc.fluent.internal.InsertReturningPath;
+import dev.oveja.jdbc.fluent.internal.SelectPath;
 
-    dev.oveja.jdbc.fluent.internal.CallPath<T> call(String sql);
+public interface GenericFlow<T> {
+    SelectPath<T> select(String sql);
+
+    InsertReturningPath<T> insertReturning(String sql);
+
+    CallPath<T> call(String sql);
 }

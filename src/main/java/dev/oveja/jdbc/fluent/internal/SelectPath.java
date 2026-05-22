@@ -1,10 +1,5 @@
 package dev.oveja.jdbc.fluent.internal;
 
-import dev.oveja.jdbc.fluent.api.Executor;
-import dev.oveja.jdbc.fluent.api.ListExecutor;
-import dev.oveja.jdbc.fluent.RowMapper;
-import dev.oveja.jdbc.fluent.ConnectionSupplier;
-
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -13,7 +8,13 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-public class SelectPath<T> 
+
+import dev.oveja.jdbc.fluent.ConnectionSupplier;
+import dev.oveja.jdbc.fluent.RowMapper;
+import dev.oveja.jdbc.fluent.api.Executor;
+import dev.oveja.jdbc.fluent.api.ListExecutor;
+
+public class SelectPath<T>
         extends BaseStatementPath<PreparedStatement, SelectPath<T>> {
 
     private final ConnectionSupplier supplier;

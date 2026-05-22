@@ -1,8 +1,10 @@
 package dev.oveja.jdbc.fluent.transaction;
 
+import java.util.function.Consumer;
+
+
 import dev.oveja.jdbc.fluent.TransactionalAction;
 import dev.oveja.jdbc.fluent.TransactionalVoidAction;
-import java.util.function.Consumer;
 
 public interface TransactionStarter {
     TransactionActionStep onException(Consumer<Exception> handler);

@@ -1,19 +1,17 @@
 package dev.oveja.jdbc.fluent;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertSame;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import java.sql.Connection;
 import java.sql.DriverManager;
 import java.sql.SQLException;
 import java.util.List;
+import java.util.Optional;
 
+
+import dev.oveja.jdbc.fluent.ConnectionSupplier;
 import dev.oveja.jdbc.fluent.api.Executor;
 import org.junit.jupiter.api.Test;
 
-import dev.oveja.jdbc.fluent.ConnectionSupplier;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TransactionTest extends AbstractFluentQueryTest {
 
@@ -145,7 +143,7 @@ public class TransactionTest extends AbstractFluentQueryTest {
         // Here we use the "Executor Pattern": 
         // We get a "Query Blueprint" and decide when/how to run it.
         User user = FluentQuery.transactionResult(supplier, cs -> {
-            int id = insertUser("Bob", "bob@example.com").execute(cs).orElseThrow();
+            int id = insertUser("Bob", "bob@example.com").execute(cs).get();
             return new User(id, "Bob", "bob@example.com");
         });
 
@@ -158,7 +156,7 @@ public class TransactionTest extends AbstractFluentQueryTest {
      * A "DAO-style" method that returns a Blueprint (Executor of Optional).
      * This method can be used standalone or inside a transaction.
      */
-    private dev.oveja.jdbc.fluent.api.Executor<java.util.Optional<Integer>> insertUser(String name, String email) {
+    private Executor<Optional<Integer>> insertUser(String name, String email) {
         return FluentQuery.<Integer>insertReturningId(supplier, "INSERT INTO users (name, email) VALUES (?, ?)")
                 .bind(name)
                 .bind(email)

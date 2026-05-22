@@ -1,9 +1,10 @@
 package dev.oveja.jdbc.fluent;
 
+import java.sql.*;
+
+
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.sql.*;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 

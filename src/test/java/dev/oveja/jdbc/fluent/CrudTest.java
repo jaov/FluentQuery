@@ -1,12 +1,13 @@
 package dev.oveja.jdbc.fluent;
 
-import org.junit.jupiter.api.Test;
-
 import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
+
 import dev.oveja.jdbc.fluent.api.Executor;
+import org.junit.jupiter.api.Test;
+
 import static org.junit.jupiter.api.Assertions.*;
 
 public class CrudTest extends AbstractFluentQueryTest {

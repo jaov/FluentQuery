@@ -4,7 +4,7 @@ import java.sql.CallableStatement;
 import java.sql.SQLException;
 
 @FunctionalInterface
-public interface CallableStatementBinder extends StatementBinder<java.sql.CallableStatement> {
+public interface CallableStatementBinder extends StatementBinder<CallableStatement> {
     @Override
-    void bind(java.sql.CallableStatement cs) throws SQLException;
+    void bind(CallableStatement cs) throws SQLException;
 }
