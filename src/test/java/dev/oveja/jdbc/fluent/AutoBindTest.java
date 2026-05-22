@@ -14,6 +14,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class AutoBindTest extends AbstractFluentQueryTest {
 
@@ -131,6 +132,9 @@ public class AutoBindTest extends AbstractFluentQueryTest {
 
         assertEquals(3, resultTags.length);
         assertEquals("java", resultTags[0]);
+        assertEquals("sql", resultTags[1]);
+        assertEquals("fluent", resultTags[2]);
+        assertThrows(IndexOutOfBoundsException.class, () -> { Object outOfBounds =  resultTags[3]; });
     }
 
     @Test
