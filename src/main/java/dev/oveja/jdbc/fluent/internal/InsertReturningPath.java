@@ -27,76 +27,41 @@ public class InsertReturningPath<T> extends BaseStatementPath<PreparedStatement,
         return this;
     }
 
-    public ListExecutor<T> map(RowMapper<T> mapper) {
-        return new ListExecutor<T>() {
-            @Override public List<T> execute() throws SQLException { return execute(supplier); }
-            @Override public List<T> execute(ConnectionSupplier s) throws SQLException {
-                return executeInternal(s, mapper);
+    public QueryMapper<T> map(RowMapper<T> mapper) {
+        return createQueryMapper(mapper);
+    }
+
+    private <R> QueryMapper<R> createQueryMapper(RowMapper<R> mapper) {
+        return new QueryMapper<R>() {
+            @Override public ListExecutor<R> list() {
+                return new ListExecutor<R>() {
+                    @Override public List<R> execute() throws SQLException { return execute(supplier); }
+                    @Override public List<R> execute(ConnectionSupplier s) throws SQLException {
+                        return executeInternal(s, mapper);
+                    }
+                };
+            }
+            @Override public Executor<Optional<R>> one() {
+                return new Executor<Optional<R>>() {
+                    @Override public Optional<R> execute() throws SQLException { return execute(supplier); }
+                    @Override public Optional<R> execute(ConnectionSupplier s) throws SQLException {
+                        return executeInternalOne(s, mapper);
+                    }
+                };
             }
         };
     }
 
-    public Executor<Optional<T>> mapOne(RowMapper<T> mapper) {
-        return new Executor<Optional<T>>() {
-            @Override public Optional<T> execute() throws SQLException { return execute(supplier); }
-            @Override public Optional<T> execute(ConnectionSupplier s) throws SQLException {
-                return executeInternalOne(s, mapper);
-            }
-        };
+    public QueryMapper<Integer> mapInt() {
+        return createQueryMapper(rs -> rs.getInt(1));
     }
 
-    public ListExecutor<Integer> mapInt() {
-        return new ListExecutor<Integer>() {
-            @Override public List<Integer> execute() throws SQLException { return execute(supplier); }
-            @Override public List<Integer> execute(ConnectionSupplier s) throws SQLException {
-                return executeInternal(s, rs -> rs.getInt(1));
-            }
-        };
+    public QueryMapper<Long> mapLong() {
+        return createQueryMapper(rs -> rs.getLong(1));
     }
 
-    public Executor<Optional<Integer>> mapOneInt() {
-        return new Executor<Optional<Integer>>() {
-            @Override public Optional<Integer> execute() throws SQLException { return execute(supplier); }
-            @Override public Optional<Integer> execute(ConnectionSupplier s) throws SQLException {
-                return executeInternalOne(s, rs -> rs.getInt(1));
-            }
-        };
-    }
-
-    public ListExecutor<Long> mapLong() {
-        return new ListExecutor<Long>() {
-            @Override public List<Long> execute() throws SQLException { return execute(supplier); }
-            @Override public List<Long> execute(ConnectionSupplier s) throws SQLException {
-                return executeInternal(s, rs -> rs.getLong(1));
-            }
-        };
-    }
-
-    public Executor<Optional<Long>> mapOneLong() {
-        return new Executor<Optional<Long>>() {
-            @Override public Optional<Long> execute() throws SQLException { return execute(supplier); }
-            @Override public Optional<Long> execute(ConnectionSupplier s) throws SQLException {
-                return executeInternalOne(s, rs -> rs.getLong(1));
-            }
-        };
-    }
-
-    public ListExecutor<String> mapString() {
-        return new ListExecutor<String>() {
-            @Override public List<String> execute() throws SQLException { return execute(supplier); }
-            @Override public List<String> execute(ConnectionSupplier s) throws SQLException {
-                return executeInternal(s, rs -> rs.getString(1));
-            }
-        };
-    }
-
-    public Executor<Optional<String>> mapOneString() {
-        return new Executor<Optional<String>>() {
-            @Override public Optional<String> execute() throws SQLException { return execute(supplier); }
-            @Override public Optional<String> execute(ConnectionSupplier s) throws SQLException {
-                return executeInternalOne(s, rs -> rs.getString(1));
-            }
-        };
+    public QueryMapper<String> mapString() {
+        return createQueryMapper(rs -> rs.getString(1));
     }
 
     private <R> List<R> executeInternal(ConnectionSupplier s, RowMapper<R> m) throws SQLException {
