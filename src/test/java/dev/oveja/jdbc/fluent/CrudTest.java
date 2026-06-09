@@ -37,6 +37,7 @@ public class CrudTest extends AbstractFluentQueryTest {
                 .select("SELECT * FROM users WHERE name = ?")
                 .bind(ps -> ps.setString(1, "John"))
                 .map(rs -> new User(rs.getInt("id"), rs.getString("name"), rs.getString("email")))
+                .list()
                 .execute();
 
         assertEquals(1, users.size());
@@ -62,7 +63,8 @@ public class CrudTest extends AbstractFluentQueryTest {
         Optional<String> name = FluentQuery.forClass(supplier, String.class)
                 .select("SELECT name FROM users")
                 .noBind()
-                .mapOne(rs -> rs.getString(1))
+                .map(rs -> rs.getString(1))
+                .one()
                 .execute();
 
         assertTrue(name.isPresent());
@@ -83,6 +85,7 @@ public class CrudTest extends AbstractFluentQueryTest {
                 .select("SELECT name FROM users")
                 .noBind()
                 .map(rs -> rs.getString(1))
+                .list()
                 .execute();
 
         assertTrue(names.isEmpty());
@@ -97,7 +100,8 @@ public class CrudTest extends AbstractFluentQueryTest {
         Optional<User> user = FluentQuery.forClass(supplier, User.class)
                 .select("SELECT * FROM users WHERE name = ?")
                 .bind(ps -> ps.setString(1, "Alice"))
-                .mapOne(rs -> new User(rs.getInt("id"), rs.getString("name"), rs.getString("email")))
+                .map(rs -> new User(rs.getInt("id"), rs.getString("name"), rs.getString("email")))
+                .one()
                 .execute();
 
         assertTrue(user.isPresent());
@@ -106,7 +110,8 @@ public class CrudTest extends AbstractFluentQueryTest {
         Optional<User> none = FluentQuery.forClass(supplier, User.class)
                 .select("SELECT * FROM users WHERE name = ?")
                 .bind(ps -> ps.setString(1, "Bob"))
-                .mapOne(rs -> new User(rs.getInt("id"), rs.getString("name"), rs.getString("email")))
+                .map(rs -> new User(rs.getInt("id"), rs.getString("name"), rs.getString("email")))
+                .one()
                 .execute();
 
         assertFalse(none.isPresent());
@@ -120,6 +125,7 @@ public class CrudTest extends AbstractFluentQueryTest {
                 .insertReturning("CALL INSERT_RETURNING('Alice', 'alice@example.com')")
                 .noBind()
                 .map(rs -> new User(rs.getInt(1), "Alice", "alice@example.com"))
+                .list()
                 .execute()
                 .get(0);
 
@@ -134,7 +140,8 @@ public class CrudTest extends AbstractFluentQueryTest {
                 FluentQuery.forClass(supplier, User.class)
                         .select("SELECT * FROM users WHERE name = ?")
                         .bind(ps -> ps.setString(1, "Alice"))
-                        .map(rs -> new User(rs.getInt("id"), rs.getString("name"), rs.getString("email")));
+                        .map(rs -> new User(rs.getInt("id"), rs.getString("name"), rs.getString("email")))
+                        .list();
 
         // Setup
         FluentQuery.insert(supplier, "INSERT INTO users (name) VALUES (?)")

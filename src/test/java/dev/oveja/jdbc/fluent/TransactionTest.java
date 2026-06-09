@@ -103,6 +103,7 @@ public class TransactionTest extends AbstractFluentQueryTest {
                 .select("SELECT name FROM users")
                 .noBind()
                 .map(rs -> rs.getString(1))
+                .list()
                 .execute();
         
         assertEquals("Bob", names.get(0));
@@ -160,7 +161,8 @@ public class TransactionTest extends AbstractFluentQueryTest {
         return FluentQuery.<Integer>insertReturningId(supplier, "INSERT INTO users (name, email) VALUES (?, ?)")
                 .bind(name)
                 .bind(email)
-                .mapOneInt();
+                .mapInt()
+                .one();
     }
 
     @Test
@@ -192,7 +194,8 @@ public class TransactionTest extends AbstractFluentQueryTest {
         return FluentQuery.forClass(supplier, Integer.class)
                 .select("SELECT COUNT(*) FROM users")
                 .noBind()
-                .mapOne(rs -> rs.getInt(1))
+                .map(rs -> rs.getInt(1))
+                .one()
                 .execute(supplier)
                 .orElse(0);
     }
