@@ -9,11 +9,9 @@ import dev.j8a.jdbc.fluent.api.DmlBinder;
 
 public class DmlPath extends BaseStatementPath<PreparedStatement, DmlBinder> implements DmlBinder {
 
-    private final ConnectionSupplier supplier;
     private final String sql;
 
-    public DmlPath(ConnectionSupplier supplier, String sql) {
-        this.supplier = supplier;
+    public DmlPath(String sql) {
         this.sql = sql;
     }
 
@@ -24,7 +22,7 @@ public class DmlPath extends BaseStatementPath<PreparedStatement, DmlBinder> imp
 
     @Override
     public Integer execute() throws SQLException {
-        return execute(this.supplier);
+        return execute(ConnectionSupplierLoader.load());
     }
 
     @Override

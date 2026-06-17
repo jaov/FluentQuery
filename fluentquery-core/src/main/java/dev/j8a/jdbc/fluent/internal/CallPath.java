@@ -16,11 +16,9 @@ public class CallPath<T>
         implements CallBinder<T>, CallMapper<T>, QueryExecutor<T> {
 
     private final String sql;
-    private final ConnectionSupplier supplier;
     private CallableMapper<T> mapper;
 
-    public CallPath(ConnectionSupplier supplier, Class<T> ignoredClass, String sql) {
-        this.supplier = supplier;
+    public CallPath(Class<T> ignoredClass, String sql) {
         this.sql = sql;
     }
 
@@ -63,7 +61,7 @@ public class CallPath<T>
 
             @Override
             public Void execute() throws SQLException {
-                return execute(CallPath.this.supplier);
+                return execute(ConnectionSupplierLoader.load());
             }
         };
     }
@@ -75,7 +73,7 @@ public class CallPath<T>
 
     @Override
     public T execute() throws SQLException {
-        return execute(this.supplier);
+        return execute(ConnectionSupplierLoader.load());
     }
 
     @Override

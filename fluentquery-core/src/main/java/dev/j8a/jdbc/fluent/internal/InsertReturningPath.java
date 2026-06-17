@@ -11,12 +11,10 @@ import dev.j8a.jdbc.fluent.api.*;
 
 public class InsertReturningPath<T> extends BaseStatementPath<PreparedStatement, InsertReturningPath<T>> {
 
-    private final ConnectionSupplier supplier;
     private final String sql;
     private final boolean useGeneratedKeys;
 
-    public InsertReturningPath(ConnectionSupplier supplier, String sql, boolean useGeneratedKeys) {
-        this.supplier = supplier;
+    public InsertReturningPath(String sql, boolean useGeneratedKeys) {
         this.sql = sql;
         this.useGeneratedKeys = useGeneratedKeys;
     }
@@ -34,7 +32,7 @@ public class InsertReturningPath<T> extends BaseStatementPath<PreparedStatement,
         return new QueryMapper<R>() {
             @Override public ListQueryExecutor<R> list() {
                 return new ListQueryExecutor<R>() {
-                    @Override public List<R> execute() throws SQLException { return execute(supplier); }
+                    @Override public List<R> execute() throws SQLException { return execute(ConnectionSupplierLoader.load()); }
                     @Override public List<R> execute(ConnectionSupplier s) throws SQLException {
                         return executeInternal(s, mapper);
                     }
@@ -42,7 +40,7 @@ public class InsertReturningPath<T> extends BaseStatementPath<PreparedStatement,
             }
             @Override public QueryExecutor<Optional<R>> one() {
                 return new QueryExecutor<Optional<R>>() {
-                    @Override public Optional<R> execute() throws SQLException { return execute(supplier); }
+                    @Override public Optional<R> execute() throws SQLException { return execute(ConnectionSupplierLoader.load()); }
                     @Override public Optional<R> execute(ConnectionSupplier s) throws SQLException {
                         return executeInternalOne(s, mapper);
                     }

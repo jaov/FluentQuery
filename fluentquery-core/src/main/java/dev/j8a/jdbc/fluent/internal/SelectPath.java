@@ -17,11 +17,9 @@ import dev.j8a.jdbc.fluent.api.QueryMapper;
 public class SelectPath<T>
         extends BaseStatementPath<PreparedStatement, SelectPath<T>> {
 
-    private final ConnectionSupplier supplier;
     private final String sql;
 
-    public SelectPath(ConnectionSupplier supplier, String sql) {
-        this.supplier = supplier;
+    public SelectPath(String sql) {
         this.sql = sql;
     }
 
@@ -37,7 +35,7 @@ public class SelectPath<T>
                 return new ListQueryExecutor<T>() {
                     @Override
                     public List<T> execute() throws SQLException {
-                        return execute(supplier);
+                        return execute(ConnectionSupplierLoader.load());
                     }
 
                     @Override
@@ -66,7 +64,7 @@ public class SelectPath<T>
                 return new QueryExecutor<Optional<T>>() {
                     @Override
                     public Optional<T> execute() throws SQLException {
-                        return execute(supplier);
+                        return execute(ConnectionSupplierLoader.load());
                     }
 
                     @Override
