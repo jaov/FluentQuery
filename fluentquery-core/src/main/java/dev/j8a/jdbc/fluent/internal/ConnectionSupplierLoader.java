@@ -3,7 +3,6 @@ package dev.j8a.jdbc.fluent.internal;
 import java.util.Iterator;
 import java.util.ServiceLoader;
 
-
 import dev.j8a.jdbc.fluent.ConnectionSupplier;
 
 public class ConnectionSupplierLoader {

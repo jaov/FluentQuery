@@ -8,11 +8,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-
 import dev.j8a.jdbc.fluent.ConnectionSupplier;
 import dev.j8a.jdbc.fluent.RowMapper;
-import dev.j8a.jdbc.fluent.api.Executor;
-import dev.j8a.jdbc.fluent.api.ListExecutor;
+import dev.j8a.jdbc.fluent.api.QueryExecutor;
+import dev.j8a.jdbc.fluent.api.ListQueryExecutor;
 import dev.j8a.jdbc.fluent.api.QueryMapper;
 
 public class SelectPath<T>
@@ -34,8 +33,8 @@ public class SelectPath<T>
     public QueryMapper<T> map(RowMapper<T> mapper) {
         return new QueryMapper<T>() {
             @Override
-            public ListExecutor<T> list() {
-                return new ListExecutor<T>() {
+            public ListQueryExecutor<T> list() {
+                return new ListQueryExecutor<T>() {
                     @Override
                     public List<T> execute() throws SQLException {
                         return execute(supplier);
@@ -63,8 +62,8 @@ public class SelectPath<T>
             }
 
             @Override
-            public Executor<Optional<T>> one() {
-                return new Executor<Optional<T>>() {
+            public QueryExecutor<Optional<T>> one() {
+                return new QueryExecutor<Optional<T>>() {
                     @Override
                     public Optional<T> execute() throws SQLException {
                         return execute(supplier);

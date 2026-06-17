@@ -5,16 +5,15 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLType;
 
-
 import dev.j8a.jdbc.fluent.CallableMapper;
 import dev.j8a.jdbc.fluent.ConnectionSupplier;
 import dev.j8a.jdbc.fluent.api.CallBinder;
 import dev.j8a.jdbc.fluent.api.CallMapper;
-import dev.j8a.jdbc.fluent.api.Executor;
+import dev.j8a.jdbc.fluent.api.QueryExecutor;
 
 public class CallPath<T>
         extends BaseStatementPath<CallableStatement, CallBinder<T>>
-        implements CallBinder<T>, CallMapper<T>, Executor<T> {
+        implements CallBinder<T>, CallMapper<T>, QueryExecutor<T> {
 
     private final String sql;
     private final ConnectionSupplier supplier;
@@ -48,15 +47,15 @@ public class CallPath<T>
     }
 
     @Override
-    public Executor<T> map(CallableMapper<T> mapper) {
+    public QueryExecutor<T> map(CallableMapper<T> mapper) {
         this.mapper = mapper;
         return this;
     }
 
     @Override
-    public Executor<Void> voidCall() {
+    public QueryExecutor<Void> voidCall() {
         this.mapper = null;
-        return new Executor<Void>() {
+        return new QueryExecutor<Void>() {
             @Override
             public Void execute(ConnectionSupplier supplier) throws SQLException {
                 return CallPath.this.runVoid(supplier);

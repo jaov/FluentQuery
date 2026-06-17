@@ -5,7 +5,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-
 import dev.j8a.jdbc.fluent.ConnectionSupplier;
 import dev.j8a.jdbc.fluent.RowMapper;
 import dev.j8a.jdbc.fluent.api.*;
@@ -33,16 +32,16 @@ public class InsertReturningPath<T> extends BaseStatementPath<PreparedStatement,
 
     private <R> QueryMapper<R> createQueryMapper(RowMapper<R> mapper) {
         return new QueryMapper<R>() {
-            @Override public ListExecutor<R> list() {
-                return new ListExecutor<R>() {
+            @Override public ListQueryExecutor<R> list() {
+                return new ListQueryExecutor<R>() {
                     @Override public List<R> execute() throws SQLException { return execute(supplier); }
                     @Override public List<R> execute(ConnectionSupplier s) throws SQLException {
                         return executeInternal(s, mapper);
                     }
                 };
             }
-            @Override public Executor<Optional<R>> one() {
-                return new Executor<Optional<R>>() {
+            @Override public QueryExecutor<Optional<R>> one() {
+                return new QueryExecutor<Optional<R>>() {
                     @Override public Optional<R> execute() throws SQLException { return execute(supplier); }
                     @Override public Optional<R> execute(ConnectionSupplier s) throws SQLException {
                         return executeInternalOne(s, mapper);

@@ -4,7 +4,6 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Optional;
 
-
 import dev.j8a.jdbc.fluent.api.*;
 import dev.j8a.jdbc.fluent.internal.ConnectionSupplierLoader;
 import dev.j8a.jdbc.fluent.internal.DmlPath;

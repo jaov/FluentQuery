@@ -4,6 +4,6 @@ import java.util.List;
 import java.util.Optional;
 
 public interface QueryMapper<T> {
-    Executor<Optional<T>> one();
-    ListExecutor<T> list();
+    QueryExecutor<Optional<T>> one();
+    ListQueryExecutor<T> list();
 }

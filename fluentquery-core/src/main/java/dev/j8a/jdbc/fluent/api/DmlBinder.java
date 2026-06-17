@@ -4,5 +4,5 @@ import java.sql.PreparedStatement;
 
 public interface DmlBinder extends 
         FluentBinder<PreparedStatement, DmlBinder>, 
-        Executor<Integer> {
+        QueryExecutor<Integer> {
 }
