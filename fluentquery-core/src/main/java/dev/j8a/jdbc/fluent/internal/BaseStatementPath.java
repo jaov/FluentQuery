@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
 
+
 import dev.j8a.jdbc.fluent.StatementBinder;
 import dev.j8a.jdbc.fluent.api.FluentBinder;
 
@@ -27,254 +28,423 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
 
     @Override
-    public B bind(String value) {
-        int idx = currentIndex++;
+    public B bind(int idx, String value) {
+        currentIndex = Math.max(currentIndex, idx + 1);
         return bind(ps -> ps.setString(idx, value));
     }
+    @Override
+    public B bind(String value) {
+        return bind(currentIndex++, value);
+    }
 
     @Override
-    public B bind(int value) {
-        int idx = currentIndex++;
+    public B bind(int idx, int value) {
+        currentIndex = Math.max(currentIndex, idx + 1);
         return bind(ps -> ps.setInt(idx, value));
     }
+    @Override
+    public B bind(int value) {
+        return bind(currentIndex++, value);
+    }
 
     @Override
-    public B bind(long value) {
-        int idx = currentIndex++;
+    public B bind(int idx, long value) {
+        currentIndex = Math.max(currentIndex, idx + 1);
         return bind(ps -> ps.setLong(idx, value));
     }
+    @Override
+    public B bind(long value) {
+        return bind(currentIndex++, value);
+    }
+
+    // ... I will need to do this for ALL types. This is a lot of code. 
+    // Wait, I can't write all of this in one turn efficiently.
+    // I will implement the pattern for the core types first.
+
 
     @Override
-    public B bind(double value) {
-        int idx = currentIndex++;
+    public B bind(int idx, double value) {
+        currentIndex = Math.max(currentIndex, idx + 1);
         return bind(ps -> ps.setDouble(idx, value));
     }
+    @Override
+    public B bind(double value) {
+        return bind(currentIndex++, value);
+    }
 
     @Override
-    public B bind(boolean value) {
-        int idx = currentIndex++;
+    public B bind(int idx, boolean value) {
+        currentIndex = Math.max(currentIndex, idx + 1);
         return bind(ps -> ps.setBoolean(idx, value));
     }
+    @Override
+    public B bind(boolean value) {
+        return bind(currentIndex++, value);
+    }
 
     @Override
-    public B bind(float value) {
-        int idx = currentIndex++;
+    public B bind(int idx, float value) {
+        currentIndex = Math.max(currentIndex, idx + 1);
         return bind(ps -> ps.setFloat(idx, value));
     }
+    @Override
+    public B bind(float value) {
+        return bind(currentIndex++, value);
+    }
 
     @Override
-    public B bind(short value) {
-        int idx = currentIndex++;
+    public B bind(int idx, short value) {
+        currentIndex = Math.max(currentIndex, idx + 1);
         return bind(ps -> ps.setShort(idx, value));
     }
+    @Override
+    public B bind(short value) {
+        return bind(currentIndex++, value);
+    }
 
     @Override
-    public B bind(byte value) {
-        int idx = currentIndex++;
+    public B bind(int idx, byte value) {
+        currentIndex = Math.max(currentIndex, idx + 1);
         return bind(ps -> ps.setByte(idx, value));
     }
+    @Override
+    public B bind(byte value) {
+        return bind(currentIndex++, value);
+    }
 
     @Override
-    public B bind(byte[] value) {
-        int idx = currentIndex++;
+    public B bind(int idx, byte[] value) {
+        currentIndex = Math.max(currentIndex, idx + 1);
         return bind(ps -> ps.setBytes(idx, value));
     }
+    @Override
+    public B bind(byte[] value) {
+        return bind(currentIndex++, value);
+    }
 
     @Override
-    public B bind(BigDecimal value) {
-        int idx = currentIndex++;
+    public B bind(int idx, BigDecimal value) {
+        currentIndex = Math.max(currentIndex, idx + 1);
         return bind(ps -> ps.setBigDecimal(idx, value));
     }
+    @Override
+    public B bind(BigDecimal value) {
+        return bind(currentIndex++, value);
+    }
 
     @Override
-    public B bind(Date value) {
-        int idx = currentIndex++;
+    public B bind(int idx, Date value) {
+        currentIndex = Math.max(currentIndex, idx + 1);
         return bind(ps -> ps.setDate(idx, value));
     }
+    @Override
+    public B bind(Date value) {
+        return bind(currentIndex++, value);
+    }
 
     @Override
-    public B bind(Time value) {
-        int idx = currentIndex++;
+    public B bind(int idx, Time value) {
+        currentIndex = Math.max(currentIndex, idx + 1);
         return bind(ps -> ps.setTime(idx, value));
     }
+    @Override
+    public B bind(Time value) {
+        return bind(currentIndex++, value);
+    }
 
     @Override
-    public B bind(Timestamp value) {
-        int idx = currentIndex++;
+    public B bind(int idx, Timestamp value) {
+        currentIndex = Math.max(currentIndex, idx + 1);
         return bind(ps -> ps.setTimestamp(idx, value));
     }
+    @Override
+    public B bind(Timestamp value) {
+        return bind(currentIndex++, value);
+    }
 
     @Override
-    public B bind(LocalDate value) {
-        int idx = currentIndex++;
+    public B bind(int idx, LocalDate value) {
+        currentIndex = Math.max(currentIndex, idx + 1);
         return bind(ps -> ps.setDate(idx, value == null ? null : Date.valueOf(value)));
     }
+    @Override
+    public B bind(LocalDate value) {
+        return bind(currentIndex++, value);
+    }
 
     @Override
-    public B bind(LocalTime value) {
-        int idx = currentIndex++;
+    public B bind(int idx, LocalTime value) {
+        currentIndex = Math.max(currentIndex, idx + 1);
         return bind(ps -> ps.setTime(idx, value == null ? null : Time.valueOf(value)));
     }
+    @Override
+    public B bind(LocalTime value) {
+        return bind(currentIndex++, value);
+    }
 
     @Override
-    public B bind(LocalDateTime value) {
-        int idx = currentIndex++;
+    public B bind(int idx, LocalDateTime value) {
+        currentIndex = Math.max(currentIndex, idx + 1);
         return bind(ps -> ps.setTimestamp(idx, value == null ? null : Timestamp.valueOf(value)));
     }
+    @Override
+    public B bind(LocalDateTime value) {
+        return bind(currentIndex++, value);
+    }
 
+    @Override
+    public B bind(int idx, OffsetDateTime value) {
+        currentIndex = Math.max(currentIndex, idx + 1);
+        return bind(ps -> ps.setObject(idx, value));
+    }
     @Override
     public B bind(OffsetDateTime value) {
-        int idx = currentIndex++;
-        return bind(ps -> ps.setObject(idx, value));
+        return bind(currentIndex++, value);
     }
 
+    @Override
+    public B bind(int idx, OffsetTime value) {
+        currentIndex = Math.max(currentIndex, idx + 1);
+        return bind(ps -> ps.setObject(idx, value));
+    }
     @Override
     public B bind(OffsetTime value) {
-        int idx = currentIndex++;
-        return bind(ps -> ps.setObject(idx, value));
+        return bind(currentIndex++, value);
     }
 
+    @Override
+    public B bind(int idx, ZonedDateTime value) {
+        currentIndex = Math.max(currentIndex, idx + 1);
+        return bind(ps -> ps.setObject(idx, value));
+    }
     @Override
     public B bind(ZonedDateTime value) {
-        int idx = currentIndex++;
-        return bind(ps -> ps.setObject(idx, value));
+        return bind(currentIndex++, value);
     }
 
     @Override
-    public B bind(URL value) {
-        int idx = currentIndex++;
+    public B bind(int idx, URL value) {
+        currentIndex = Math.max(currentIndex, idx + 1);
         return bind(ps -> ps.setURL(idx, value));
     }
+    @Override
+    public B bind(URL value) {
+        return bind(currentIndex++, value);
+    }
 
     @Override
-    public B bind(Blob value) {
-        int idx = currentIndex++;
+    public B bind(int idx, Blob value) {
+        currentIndex = Math.max(currentIndex, idx + 1);
         return bind(ps -> ps.setBlob(idx, value));
     }
+    @Override
+    public B bind(Blob value) {
+        return bind(currentIndex++, value);
+    }
 
     @Override
-    public B bind(Clob value) {
-        int idx = currentIndex++;
+    public B bind(int idx, Clob value) {
+        currentIndex = Math.max(currentIndex, idx + 1);
         return bind(ps -> ps.setClob(idx, value));
     }
+    @Override
+    public B bind(Clob value) {
+        return bind(currentIndex++, value);
+    }
 
     @Override
-    public B bind(NClob value) {
-        int idx = currentIndex++;
+    public B bind(int idx, NClob value) {
+        currentIndex = Math.max(currentIndex, idx + 1);
         return bind(ps -> ps.setNClob(idx, value));
     }
+    @Override
+    public B bind(NClob value) {
+        return bind(currentIndex++, value);
+    }
 
     @Override
-    public B bind(SQLXML value) {
-        int idx = currentIndex++;
+    public B bind(int idx, SQLXML value) {
+        currentIndex = Math.max(currentIndex, idx + 1);
         return bind(ps -> ps.setSQLXML(idx, value));
     }
+    @Override
+    public B bind(SQLXML value) {
+        return bind(currentIndex++, value);
+    }
 
     @Override
-    public B bind(Ref value) {
-        int idx = currentIndex++;
+    public B bind(int idx, Ref value) {
+        currentIndex = Math.max(currentIndex, idx + 1);
         return bind(ps -> ps.setRef(idx, value));
     }
+    @Override
+    public B bind(Ref value) {
+        return bind(currentIndex++, value);
+    }
 
     @Override
-    public B bind(RowId value) {
-        int idx = currentIndex++;
+    public B bind(int idx, RowId value) {
+        currentIndex = Math.max(currentIndex, idx + 1);
         return bind(ps -> ps.setRowId(idx, value));
     }
+    @Override
+    public B bind(RowId value) {
+        return bind(currentIndex++, value);
+    }
 
     @Override
-    public B bind(InputStream value) {
-        int idx = currentIndex++;
+    public B bind(int idx, InputStream value) {
+        currentIndex = Math.max(currentIndex, idx + 1);
         return bind(ps -> ps.setBinaryStream(idx, value));
     }
+    @Override
+    public B bind(InputStream value) {
+        return bind(currentIndex++, value);
+    }
 
+    @Override
+    public B bind(int idx, InputStream value, int length) {
+        currentIndex = Math.max(currentIndex, idx + 1);
+        return bind(ps -> ps.setBinaryStream(idx, value, length));
+    }
     @Override
     public B bind(InputStream value, int length) {
-        int idx = currentIndex++;
-        return bind(ps -> ps.setBinaryStream(idx, value, length));
+        return bind(currentIndex++, value, length);
     }
 
+    @Override
+    public B bind(int idx, InputStream value, long length) {
+        currentIndex = Math.max(currentIndex, idx + 1);
+        return bind(ps -> ps.setBinaryStream(idx, value, length));
+    }
     @Override
     public B bind(InputStream value, long length) {
-        int idx = currentIndex++;
-        return bind(ps -> ps.setBinaryStream(idx, value, length));
+        return bind(currentIndex++, value, length);
     }
 
     @Override
-    public B bind(Reader value) {
-        int idx = currentIndex++;
+    public B bind(int idx, Reader value) {
+        currentIndex = Math.max(currentIndex, idx + 1);
         return bind(ps -> ps.setCharacterStream(idx, value));
     }
+    @Override
+    public B bind(Reader value) {
+        return bind(currentIndex++, value);
+    }
 
+    @Override
+    public B bind(int idx, Reader value, int length) {
+        currentIndex = Math.max(currentIndex, idx + 1);
+        return bind(ps -> ps.setCharacterStream(idx, value, length));
+    }
     @Override
     public B bind(Reader value, int length) {
-        int idx = currentIndex++;
-        return bind(ps -> ps.setCharacterStream(idx, value, length));
+        return bind(currentIndex++, value, length);
     }
 
+    @Override
+    public B bind(int idx, Reader value, long length) {
+        currentIndex = Math.max(currentIndex, idx + 1);
+        return bind(ps -> ps.setCharacterStream(idx, value, length));
+    }
     @Override
     public B bind(Reader value, long length) {
-        int idx = currentIndex++;
-        return bind(ps -> ps.setCharacterStream(idx, value, length));
+        return bind(currentIndex++, value, length);
     }
 
     @Override
-    public B bindNString(String value) {
-        int idx = currentIndex++;
+    public B bindNString(int idx, String value) {
+        currentIndex = Math.max(currentIndex, idx + 1);
         return bind(ps -> ps.setNString(idx, value));
     }
+    @Override
+    public B bindNString(String value) {
+        return bindNString(currentIndex++, value);
+    }
 
     @Override
-    public B bindNCharacterStream(Reader value) {
-        int idx = currentIndex++;
+    public B bindNCharacterStream(int idx, Reader value) {
+        currentIndex = Math.max(currentIndex, idx + 1);
         return bind(ps -> ps.setNCharacterStream(idx, value));
     }
+    @Override
+    public B bindNCharacterStream(Reader value) {
+        return bindNCharacterStream(currentIndex++, value);
+    }
 
     @Override
-    public B bindNCharacterStream(Reader value, long length) {
-        int idx = currentIndex++;
+    public B bindNCharacterStream(int idx, Reader value, long length) {
+        currentIndex = Math.max(currentIndex, idx + 1);
         return bind(ps -> ps.setNCharacterStream(idx, value, length));
     }
+    @Override
+    public B bindNCharacterStream(Reader value, long length) {
+        return bindNCharacterStream(currentIndex++, value, length);
+    }
 
     @Override
-    public B bindAsciiStream(InputStream value) {
-        int idx = currentIndex++;
+    public B bindAsciiStream(int idx, InputStream value) {
+        currentIndex = Math.max(currentIndex, idx + 1);
         return bind(ps -> ps.setAsciiStream(idx, value));
     }
+    @Override
+    public B bindAsciiStream(InputStream value) {
+        return bindAsciiStream(currentIndex++, value);
+    }
 
+    @Override
+    public B bindAsciiStream(int idx, InputStream value, int length) {
+        currentIndex = Math.max(currentIndex, idx + 1);
+        return bind(ps -> ps.setAsciiStream(idx, value, length));
+    }
     @Override
     public B bindAsciiStream(InputStream value, int length) {
-        int idx = currentIndex++;
-        return bind(ps -> ps.setAsciiStream(idx, value, length));
+        return bindAsciiStream(currentIndex++, value, length);
     }
 
+    @Override
+    public B bindAsciiStream(int idx, InputStream value, long length) {
+        currentIndex = Math.max(currentIndex, idx + 1);
+        return bind(ps -> ps.setAsciiStream(idx, value, length));
+    }
     @Override
     public B bindAsciiStream(InputStream value, long length) {
-        int idx = currentIndex++;
-        return bind(ps -> ps.setAsciiStream(idx, value, length));
+        return bindAsciiStream(currentIndex++, value, length);
     }
 
     @Override
-    public B bind(Object value) {
-        int idx = currentIndex++;
+    public B bind(int idx, Object value) {
+        currentIndex = Math.max(currentIndex, idx + 1);
         return bind(ps -> ps.setObject(idx, value));
     }
+    @Override
+    public B bind(Object value) {
+        return bind(currentIndex++, value);
+    }
 
     @Override
-    public B bind(Object value, int targetSqlType) {
-        int idx = currentIndex++;
+    public B bind(int idx, Object value, int targetSqlType) {
+        currentIndex = Math.max(currentIndex, idx + 1);
         return bind(ps -> ps.setObject(idx, value, targetSqlType));
     }
-
     @Override
-    public B bind(Object value, int targetSqlType, int scaleOrLength) {
-        int idx = currentIndex++;
-        return bind(ps -> ps.setObject(idx, value, targetSqlType, scaleOrLength));
+    public B bind(Object value, int targetSqlType) {
+        return bind(currentIndex++, value, targetSqlType);
     }
 
     @Override
-    public B bind(Object[] value) {
-        int idx = currentIndex++;
+    public B bind(int idx, Object value, int targetSqlType, int scaleOrLength) {
+        currentIndex = Math.max(currentIndex, idx + 1);
+        return bind(ps -> ps.setObject(idx, value, targetSqlType, scaleOrLength));
+    }
+    @Override
+    public B bind(Object value, int targetSqlType, int scaleOrLength) {
+        return bind(currentIndex++, value, targetSqlType, scaleOrLength);
+    }
+
+    @Override
+    public B bind(int idx, Object[] value) {
+        currentIndex = Math.max(currentIndex, idx + 1);
         return bind(ps -> {
             if (value == null) {
                 ps.setNull(idx, Types.ARRAY);
@@ -285,10 +455,14 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
             }
         });
     }
+    @Override
+    public B bind(Object[] value) {
+        return bind(currentIndex++, value);
+    }
 
     @Override
-    public B bind(Collection<?> value) {
-        int idx = currentIndex++;
+    public B bind(int idx, Collection<?> value) {
+        currentIndex = Math.max(currentIndex, idx + 1);
         return bind(ps -> {
             if (value == null) {
                 ps.setNull(idx, Types.ARRAY);
@@ -299,6 +473,10 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
                 ps.setArray(idx, array);
             }
         });
+    }
+    @Override
+    public B bind(Collection<?> value) {
+        return bind(currentIndex++, value);
     }
 
     protected String guessSqlTypeName(Class<?> componentType) {

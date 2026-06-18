@@ -4,12 +4,9 @@ import java.sql.Connection;
 import java.sql.SQLException;
 import java.util.Optional;
 
+
 import dev.j8a.jdbc.fluent.api.*;
-import dev.j8a.jdbc.fluent.internal.ConnectionSupplierLoader;
-import dev.j8a.jdbc.fluent.internal.DmlPath;
-import dev.j8a.jdbc.fluent.internal.GenericPath;
-import dev.j8a.jdbc.fluent.internal.InsertReturningPath;
-import dev.j8a.jdbc.fluent.internal.CallPath;
+import dev.j8a.jdbc.fluent.internal.*;
 import dev.j8a.jdbc.fluent.transaction.TransactionStarter;
 
 public final class FluentQuery {
@@ -20,15 +17,7 @@ public final class FluentQuery {
         return new GenericPath<>(clazz);
     }
 
-    public static <T> GenericFlow<T> forClass(ConnectionSupplier supplier, Class<T> clazz) {
-        return new GenericPath<>(clazz);
-    }
-
     public static <T> InsertReturningPath<T> insertReturningId(String sql) {
-        return new InsertReturningPath<>(sql, true);
-    }
-
-    public static <T> InsertReturningPath<T> insertReturningId(ConnectionSupplier supplier, String sql) {
         return new InsertReturningPath<>(sql, true);
     }
 
@@ -36,32 +25,16 @@ public final class FluentQuery {
         return new DmlPath(sql);
     }
 
-    public static DmlBinder update(ConnectionSupplier supplier, String sql) {
-        return new DmlPath(sql); // Supplier ignored for stateless path
-    }
-
     public static DmlBinder delete(String sql) {
         return new DmlPath(sql);
-    }
-
-    public static DmlBinder delete(ConnectionSupplier supplier, String sql) {
-        return new DmlPath(sql); // Supplier ignored for stateless path
     }
 
     public static DmlBinder insert(String sql) {
         return new DmlPath(sql);
     }
 
-    public static DmlBinder insert(ConnectionSupplier supplier, String sql) {
-        return new DmlPath(sql); // Supplier ignored for stateless path
-    }
-
     public static <T> CallPath<T> call(Class<T> clazz, String sql) {
-        return new CallPath<>(clazz, sql);
-    }
-
-    public static <T> CallPath<T> call(ConnectionSupplier supplier, Class<T> clazz, String sql) {
-        return new CallPath<>(clazz, sql); // Supplier ignored for stateless path
+        return new CallPath<T>(clazz, sql);
     }
 
     public static TransactionStarter transaction() {

@@ -7,14 +7,17 @@ import java.sql.SQLType;
 
 import dev.j8a.jdbc.fluent.CallableMapper;
 import dev.j8a.jdbc.fluent.ConnectionSupplier;
+import dev.j8a.jdbc.fluent.internal.ConnectionSupplierLoader;
 import dev.j8a.jdbc.fluent.api.CallBinder;
 import dev.j8a.jdbc.fluent.api.CallMapper;
 import dev.j8a.jdbc.fluent.api.QueryExecutor;
 
-public class CallPath<T>
-        extends BaseStatementPath<CallableStatement, CallBinder<T>>
-        implements CallBinder<T>, CallMapper<T>, QueryExecutor<T> {
-
+/**
+ * Path handling for callable statements (stored procedures / functions).
+ * Allows execution with an explicit {@link ConnectionSupplier} or falls back to the default
+ * {@link ConnectionSupplierLoader} when none is supplied.
+ */
+public class CallPath<T> extends BaseStatementPath<CallableStatement, CallBinder<T>> implements CallBinder<T>, CallMapper<T>, QueryExecutor<T> {
     private final String sql;
     private CallableMapper<T> mapper;
 
@@ -73,6 +76,7 @@ public class CallPath<T>
 
     @Override
     public T execute() throws SQLException {
+        // Fallback to default loader
         return execute(ConnectionSupplierLoader.load());
     }
 

@@ -2,6 +2,7 @@ package dev.j8a.jdbc.fluent.api;
 
 import java.sql.PreparedStatement;
 
+
 import dev.j8a.jdbc.fluent.ConnectionSupplier;
 import dev.j8a.jdbc.fluent.internal.CallPath;
 import dev.j8a.jdbc.fluent.internal.InsertReturningPath;
