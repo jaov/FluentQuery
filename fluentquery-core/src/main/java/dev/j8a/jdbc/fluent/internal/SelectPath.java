@@ -34,6 +34,14 @@ public class SelectPath<T>
             @Override
             public ListQueryExecutor<T> list() {
                 return new ListQueryExecutor<T>() {
+                    private java.util.function.Consumer<dev.j8a.jdbc.fluent.api.QueryContext> logConsumer;
+
+                    @Override
+                    public ListQueryExecutor<T> log(java.util.function.Consumer<dev.j8a.jdbc.fluent.api.QueryContext> logConsumer) {
+                        this.logConsumer = logConsumer;
+                        return this;
+                    }
+
                     @Override
                     public List<T> execute() throws SQLException {
                         return execute(ConnectionSupplierLoader.load());
@@ -42,12 +50,17 @@ public class SelectPath<T>
                     @Override
                     public List<T> execute(ConnectionSupplier s) throws SQLException {
                         Connection con = s.get();
+                        long start = System.nanoTime();
                         try (PreparedStatement ps = con.prepareStatement(sql)) {
                             applyBinders(ps);
                             try (ResultSet rs = ps.executeQuery()) {
                                 List<T> list = new ArrayList<>();
                                 while (rs.next()) {
                                     list.add(mapper.map(rs));
+                                }
+                                if (logConsumer != null) {
+                                    long duration = System.nanoTime() - start;
+                                    logConsumer.accept(new dev.j8a.jdbc.fluent.api.QueryContext(sql, boundParameters, ps.toString(), duration));
                                 }
                                 return list;
                             }
@@ -63,6 +76,14 @@ public class SelectPath<T>
             @Override
             public QueryExecutor<Optional<T>> one() {
                 return new QueryExecutor<Optional<T>>() {
+                    private java.util.function.Consumer<dev.j8a.jdbc.fluent.api.QueryContext> logConsumer;
+
+                    @Override
+                    public QueryExecutor<Optional<T>> log(java.util.function.Consumer<dev.j8a.jdbc.fluent.api.QueryContext> logConsumer) {
+                        this.logConsumer = logConsumer;
+                        return this;
+                    }
+
                     @Override
                     public Optional<T> execute() throws SQLException {
                         return execute(ConnectionSupplierLoader.load());
@@ -71,13 +92,19 @@ public class SelectPath<T>
                     @Override
                     public Optional<T> execute(ConnectionSupplier s) throws SQLException {
                         Connection con = s.get();
+                        long start = System.nanoTime();
                         try (PreparedStatement ps = con.prepareStatement(sql)) {
                             applyBinders(ps);
                             try (ResultSet rs = ps.executeQuery()) {
+                                Optional<T> result = Optional.empty();
                                 if (rs.next()) {
-                                    return Optional.of(mapper.map(rs));
+                                    result = Optional.of(mapper.map(rs));
                                 }
-                                return Optional.empty();
+                                if (logConsumer != null) {
+                                    long duration = System.nanoTime() - start;
+                                    logConsumer.accept(new dev.j8a.jdbc.fluent.api.QueryContext(sql, boundParameters, ps.toString(), duration));
+                                }
+                                return result;
                             }
                         } finally {
                             if (s.shouldClose()) {
@@ -89,4 +116,5 @@ public class SelectPath<T>
             }
         };
     }
+
 }

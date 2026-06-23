@@ -33,17 +33,33 @@ public class InsertReturningPath<T> extends BaseStatementPath<PreparedStatement,
         return new QueryMapper<R>() {
             @Override public ListQueryExecutor<R> list() {
                 return new ListQueryExecutor<R>() {
+                    private java.util.function.Consumer<dev.j8a.jdbc.fluent.api.QueryContext> logConsumer;
+
+                    @Override
+                    public ListQueryExecutor<R> log(java.util.function.Consumer<dev.j8a.jdbc.fluent.api.QueryContext> logConsumer) {
+                        this.logConsumer = logConsumer;
+                        return this;
+                    }
+
                     @Override public List<R> execute() throws SQLException { return execute(ConnectionSupplierLoader.load()); }
                     @Override public List<R> execute(ConnectionSupplier s) throws SQLException {
-                        return executeInternal(s, mapper);
+                        return executeInternal(s, mapper, logConsumer);
                     }
                 };
             }
             @Override public QueryExecutor<Optional<R>> one() {
                 return new QueryExecutor<Optional<R>>() {
+                    private java.util.function.Consumer<dev.j8a.jdbc.fluent.api.QueryContext> logConsumer;
+
+                    @Override
+                    public QueryExecutor<Optional<R>> log(java.util.function.Consumer<dev.j8a.jdbc.fluent.api.QueryContext> logConsumer) {
+                        this.logConsumer = logConsumer;
+                        return this;
+                    }
+
                     @Override public Optional<R> execute() throws SQLException { return execute(ConnectionSupplierLoader.load()); }
                     @Override public Optional<R> execute(ConnectionSupplier s) throws SQLException {
-                        return executeInternalOne(s, mapper);
+                        return executeInternalOne(s, mapper, logConsumer);
                     }
                 };
             }
@@ -62,8 +78,9 @@ public class InsertReturningPath<T> extends BaseStatementPath<PreparedStatement,
         return createQueryMapper(rs -> rs.getString(1));
     }
 
-    private <R> List<R> executeInternal(ConnectionSupplier s, RowMapper<R> m) throws SQLException {
+    private <R> List<R> executeInternal(ConnectionSupplier s, RowMapper<R> m, java.util.function.Consumer<dev.j8a.jdbc.fluent.api.QueryContext> logConsumer) throws SQLException {
         Connection con = s.get();
+        long start = System.nanoTime();
         try (PreparedStatement ps = prepare(con)) {
             applyBinders(ps);
             ResultSet rs = executeAndGetResultSet(ps);
@@ -75,25 +92,35 @@ public class InsertReturningPath<T> extends BaseStatementPath<PreparedStatement,
                     rs.close();
                 }
             }
+            if (logConsumer != null) {
+                long duration = System.nanoTime() - start;
+                logConsumer.accept(new dev.j8a.jdbc.fluent.api.QueryContext(sql, boundParameters, ps.toString(), duration));
+            }
             return list;
         } finally {
             if (s.shouldClose()) con.close();
         }
     }
 
-    private <R> Optional<R> executeInternalOne(ConnectionSupplier s, RowMapper<R> m) throws SQLException {
+    private <R> Optional<R> executeInternalOne(ConnectionSupplier s, RowMapper<R> m, java.util.function.Consumer<dev.j8a.jdbc.fluent.api.QueryContext> logConsumer) throws SQLException {
         Connection con = s.get();
+        long start = System.nanoTime();
         try (PreparedStatement ps = prepare(con)) {
             applyBinders(ps);
             ResultSet rs = executeAndGetResultSet(ps);
+            Optional<R> result = Optional.empty();
             if (rs != null) {
                 try {
-                    if (rs.next()) return Optional.of(m.map(rs));
+                    if (rs.next()) result = Optional.of(m.map(rs));
                 } finally {
                     rs.close();
                 }
             }
-            return Optional.empty();
+            if (logConsumer != null) {
+                long duration = System.nanoTime() - start;
+                logConsumer.accept(new dev.j8a.jdbc.fluent.api.QueryContext(sql, boundParameters, ps.toString(), duration));
+            }
+            return result;
         } finally {
             if (s.shouldClose()) con.close();
         }

@@ -47,6 +47,14 @@ public class CallPath<T> extends BaseStatementPath<CallableStatement, CallBinder
         return this;
     }
 
+    private java.util.function.Consumer<dev.j8a.jdbc.fluent.api.QueryContext> logConsumer;
+
+    @Override
+    public QueryExecutor<T> log(java.util.function.Consumer<dev.j8a.jdbc.fluent.api.QueryContext> logConsumer) {
+        this.logConsumer = logConsumer;
+        return this;
+    }
+
     @Override
     public QueryExecutor<T> map(CallableMapper<T> mapper) {
         this.mapper = mapper;
@@ -57,6 +65,15 @@ public class CallPath<T> extends BaseStatementPath<CallableStatement, CallBinder
     public QueryExecutor<Void> voidCall() {
         this.mapper = null;
         return new QueryExecutor<Void>() {
+            private java.util.function.Consumer<dev.j8a.jdbc.fluent.api.QueryContext> voidLogConsumer;
+
+            @Override
+            public QueryExecutor<Void> log(java.util.function.Consumer<dev.j8a.jdbc.fluent.api.QueryContext> logConsumer) {
+                this.voidLogConsumer = logConsumer;
+                CallPath.this.log(logConsumer);
+                return this;
+            }
+
             @Override
             public Void execute(ConnectionSupplier supplier) throws SQLException {
                 return CallPath.this.runVoid(supplier);
@@ -83,10 +100,16 @@ public class CallPath<T> extends BaseStatementPath<CallableStatement, CallBinder
     @Override
     public T execute(ConnectionSupplier supplier) throws SQLException {
         Connection con = supplier.get();
+        long start = System.nanoTime();
         try (CallableStatement stmt = con.prepareCall(sql)) {
             applyBinders(stmt);
             stmt.execute();
-            return mapper != null ? mapper.map(stmt) : null;
+            T result = mapper != null ? mapper.map(stmt) : null;
+            if (logConsumer != null) {
+                long duration = System.nanoTime() - start;
+                logConsumer.accept(new dev.j8a.jdbc.fluent.api.QueryContext(sql, boundParameters, stmt.toString(), duration));
+            }
+            return result;
         } finally {
             if (supplier.shouldClose()) {
                 con.close();

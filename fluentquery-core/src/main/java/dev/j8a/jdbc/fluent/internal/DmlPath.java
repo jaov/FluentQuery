@@ -25,6 +25,12 @@ public class DmlPath extends BaseStatementPath<PreparedStatement, DmlBinder> imp
     }
 
     @Override
+    public DmlBinder log(java.util.function.Consumer<dev.j8a.jdbc.fluent.api.QueryContext> logConsumer) {
+        this.logConsumer = logConsumer;
+        return this;
+    }
+
+    @Override
     public Integer execute() throws SQLException {
         // Use the default ConnectionSupplierLoader
         return execute(ConnectionSupplierLoader.load());
@@ -37,9 +43,15 @@ public class DmlPath extends BaseStatementPath<PreparedStatement, DmlBinder> imp
         }
         System.out.println("DmlPath: Calling execute(ConnectionSupplier)");
         Connection con = supplier.get();
+        long start = System.nanoTime();
         try (PreparedStatement ps = con.prepareStatement(sql)) {
             applyBinders(ps);
-            return ps.executeUpdate();
+            int rows = ps.executeUpdate();
+            if (logConsumer != null) {
+                long duration = System.nanoTime() - start;
+                logConsumer.accept(new dev.j8a.jdbc.fluent.api.QueryContext(sql, boundParameters, ps.toString(), duration));
+            }
+            return rows;
         } finally {
             if (supplier.shouldClose()) {
                 con.close();

@@ -174,6 +174,40 @@ public class CrudTest extends AbstractFluentQueryTest {
         assertEquals(2, users.size());
     }
 
+    @Test
+    void testLogging() throws Exception {
+        java.util.concurrent.atomic.AtomicReference<dev.j8a.jdbc.fluent.api.QueryContext> loggedCtx = new java.util.concurrent.atomic.AtomicReference<>();
+
+        FluentQuery.insert("INSERT INTO users (name, email) VALUES (?, ?)")
+                .bind(1, "LoggerUser")
+                .bind(2, "logger@example.com")
+                .log(loggedCtx::set)
+                .execute(supplier);
+
+        assertNotNull(loggedCtx.get());
+        assertEquals("INSERT INTO users (name, email) VALUES (?, ?)", loggedCtx.get().getSql());
+        assertEquals("LoggerUser", loggedCtx.get().getBoundParameters().get(1));
+        assertEquals("logger@example.com", loggedCtx.get().getBoundParameters().get(2));
+        assertNotNull(loggedCtx.get().getStatementRepresentation());
+        assertTrue(loggedCtx.get().getExecutionTimeNanos() > 0);
+
+        loggedCtx.set(null);
+
+        List<User> users = FluentQuery.forClass(User.class)
+                .select("SELECT * FROM users WHERE name = ?")
+                .bind(1, "LoggerUser")
+                .map(rs -> new User(rs.getInt("id"), rs.getString("name"), rs.getString("email")))
+                .list()
+                .log(loggedCtx::set)
+                .execute(supplier);
+
+        assertNotNull(loggedCtx.get());
+        assertEquals("SELECT * FROM users WHERE name = ?", loggedCtx.get().getSql());
+        assertEquals("LoggerUser", loggedCtx.get().getBoundParameters().get(1));
+        assertNotNull(loggedCtx.get().getStatementRepresentation());
+        assertTrue(loggedCtx.get().getExecutionTimeNanos() > 0);
+    }
+
     public static ResultSet getUsersFunc(Connection con) throws SQLException {
         return con.createStatement().executeQuery("SELECT 1 AS id, 'Alice' AS name, 'alice@example.com' AS email UNION ALL SELECT 2, 'Bob', 'bob@example.com'");
     }

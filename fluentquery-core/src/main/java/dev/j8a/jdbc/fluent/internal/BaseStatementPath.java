@@ -9,6 +9,9 @@ import java.time.*;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.List;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.function.Consumer;
 
 
 import dev.j8a.jdbc.fluent.StatementBinder;
@@ -17,7 +20,15 @@ import dev.j8a.jdbc.fluent.api.FluentBinder;
 public abstract class BaseStatementPath<S extends PreparedStatement, B> implements FluentBinder<S, B> {
 
     protected final List<StatementBinder<S>> binders = new ArrayList<>();
+    protected final Map<Integer, Object> boundParameters = new TreeMap<>();
     protected int currentIndex = 1;
+    protected Consumer<dev.j8a.jdbc.fluent.api.QueryContext> logConsumer;
+
+    private B bindParameter(int idx, Object value, StatementBinder<S> binder) {
+        currentIndex = Math.max(currentIndex, idx + 1);
+        boundParameters.put(idx, value);
+        return bind(binder);
+    }
 
     protected abstract B self();
 
@@ -29,8 +40,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bind(int idx, String value) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setString(idx, value));
+        return bindParameter(idx, value, ps -> ps.setString(idx, value));
     }
     @Override
     public B bind(String value) {
@@ -39,8 +49,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bind(int idx, int value) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setInt(idx, value));
+        return bindParameter(idx, value, ps -> ps.setInt(idx, value));
     }
     @Override
     public B bind(int value) {
@@ -49,8 +58,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bind(int idx, long value) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setLong(idx, value));
+        return bindParameter(idx, value, ps -> ps.setLong(idx, value));
     }
     @Override
     public B bind(long value) {
@@ -64,8 +72,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bind(int idx, double value) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setDouble(idx, value));
+        return bindParameter(idx, value, ps -> ps.setDouble(idx, value));
     }
     @Override
     public B bind(double value) {
@@ -74,8 +81,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bind(int idx, boolean value) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setBoolean(idx, value));
+        return bindParameter(idx, value, ps -> ps.setBoolean(idx, value));
     }
     @Override
     public B bind(boolean value) {
@@ -84,8 +90,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bind(int idx, float value) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setFloat(idx, value));
+        return bindParameter(idx, value, ps -> ps.setFloat(idx, value));
     }
     @Override
     public B bind(float value) {
@@ -94,8 +99,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bind(int idx, short value) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setShort(idx, value));
+        return bindParameter(idx, value, ps -> ps.setShort(idx, value));
     }
     @Override
     public B bind(short value) {
@@ -104,8 +108,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bind(int idx, byte value) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setByte(idx, value));
+        return bindParameter(idx, value, ps -> ps.setByte(idx, value));
     }
     @Override
     public B bind(byte value) {
@@ -114,8 +117,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bind(int idx, byte[] value) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setBytes(idx, value));
+        return bindParameter(idx, value, ps -> ps.setBytes(idx, value));
     }
     @Override
     public B bind(byte[] value) {
@@ -124,8 +126,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bind(int idx, BigDecimal value) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setBigDecimal(idx, value));
+        return bindParameter(idx, value, ps -> ps.setBigDecimal(idx, value));
     }
     @Override
     public B bind(BigDecimal value) {
@@ -134,8 +135,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bind(int idx, Date value) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setDate(idx, value));
+        return bindParameter(idx, value, ps -> ps.setDate(idx, value));
     }
     @Override
     public B bind(Date value) {
@@ -144,8 +144,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bind(int idx, Time value) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setTime(idx, value));
+        return bindParameter(idx, value, ps -> ps.setTime(idx, value));
     }
     @Override
     public B bind(Time value) {
@@ -154,8 +153,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bind(int idx, Timestamp value) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setTimestamp(idx, value));
+        return bindParameter(idx, value, ps -> ps.setTimestamp(idx, value));
     }
     @Override
     public B bind(Timestamp value) {
@@ -164,8 +162,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bind(int idx, LocalDate value) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setDate(idx, value == null ? null : Date.valueOf(value)));
+        return bindParameter(idx, value, ps -> ps.setDate(idx, value == null ? null : Date.valueOf(value)));
     }
     @Override
     public B bind(LocalDate value) {
@@ -174,8 +171,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bind(int idx, LocalTime value) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setTime(idx, value == null ? null : Time.valueOf(value)));
+        return bindParameter(idx, value, ps -> ps.setTime(idx, value == null ? null : Time.valueOf(value)));
     }
     @Override
     public B bind(LocalTime value) {
@@ -184,8 +180,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bind(int idx, LocalDateTime value) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setTimestamp(idx, value == null ? null : Timestamp.valueOf(value)));
+        return bindParameter(idx, value, ps -> ps.setTimestamp(idx, value == null ? null : Timestamp.valueOf(value)));
     }
     @Override
     public B bind(LocalDateTime value) {
@@ -194,8 +189,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bind(int idx, OffsetDateTime value) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setObject(idx, value));
+        return bindParameter(idx, value, ps -> ps.setObject(idx, value));
     }
     @Override
     public B bind(OffsetDateTime value) {
@@ -204,8 +198,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bind(int idx, OffsetTime value) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setObject(idx, value));
+        return bindParameter(idx, value, ps -> ps.setObject(idx, value));
     }
     @Override
     public B bind(OffsetTime value) {
@@ -214,8 +207,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bind(int idx, ZonedDateTime value) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setObject(idx, value));
+        return bindParameter(idx, value, ps -> ps.setObject(idx, value));
     }
     @Override
     public B bind(ZonedDateTime value) {
@@ -224,8 +216,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bind(int idx, URL value) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setURL(idx, value));
+        return bindParameter(idx, value, ps -> ps.setURL(idx, value));
     }
     @Override
     public B bind(URL value) {
@@ -234,8 +225,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bind(int idx, Blob value) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setBlob(idx, value));
+        return bindParameter(idx, value, ps -> ps.setBlob(idx, value));
     }
     @Override
     public B bind(Blob value) {
@@ -244,8 +234,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bind(int idx, Clob value) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setClob(idx, value));
+        return bindParameter(idx, value, ps -> ps.setClob(idx, value));
     }
     @Override
     public B bind(Clob value) {
@@ -254,8 +243,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bind(int idx, NClob value) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setNClob(idx, value));
+        return bindParameter(idx, value, ps -> ps.setNClob(idx, value));
     }
     @Override
     public B bind(NClob value) {
@@ -264,8 +252,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bind(int idx, SQLXML value) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setSQLXML(idx, value));
+        return bindParameter(idx, value, ps -> ps.setSQLXML(idx, value));
     }
     @Override
     public B bind(SQLXML value) {
@@ -274,8 +261,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bind(int idx, Ref value) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setRef(idx, value));
+        return bindParameter(idx, value, ps -> ps.setRef(idx, value));
     }
     @Override
     public B bind(Ref value) {
@@ -284,8 +270,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bind(int idx, RowId value) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setRowId(idx, value));
+        return bindParameter(idx, value, ps -> ps.setRowId(idx, value));
     }
     @Override
     public B bind(RowId value) {
@@ -294,8 +279,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bind(int idx, InputStream value) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setBinaryStream(idx, value));
+        return bindParameter(idx, value, ps -> ps.setBinaryStream(idx, value));
     }
     @Override
     public B bind(InputStream value) {
@@ -304,8 +288,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bind(int idx, InputStream value, int length) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setBinaryStream(idx, value, length));
+        return bindParameter(idx, value, ps -> ps.setBinaryStream(idx, value, length));
     }
     @Override
     public B bind(InputStream value, int length) {
@@ -314,8 +297,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bind(int idx, InputStream value, long length) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setBinaryStream(idx, value, length));
+        return bindParameter(idx, value, ps -> ps.setBinaryStream(idx, value, length));
     }
     @Override
     public B bind(InputStream value, long length) {
@@ -324,8 +306,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bind(int idx, Reader value) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setCharacterStream(idx, value));
+        return bindParameter(idx, value, ps -> ps.setCharacterStream(idx, value));
     }
     @Override
     public B bind(Reader value) {
@@ -334,8 +315,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bind(int idx, Reader value, int length) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setCharacterStream(idx, value, length));
+        return bindParameter(idx, value, ps -> ps.setCharacterStream(idx, value, length));
     }
     @Override
     public B bind(Reader value, int length) {
@@ -344,8 +324,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bind(int idx, Reader value, long length) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setCharacterStream(idx, value, length));
+        return bindParameter(idx, value, ps -> ps.setCharacterStream(idx, value, length));
     }
     @Override
     public B bind(Reader value, long length) {
@@ -354,8 +333,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bindNString(int idx, String value) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setNString(idx, value));
+        return bindParameter(idx, value, ps -> ps.setNString(idx, value));
     }
     @Override
     public B bindNString(String value) {
@@ -364,8 +342,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bindNCharacterStream(int idx, Reader value) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setNCharacterStream(idx, value));
+        return bindParameter(idx, value, ps -> ps.setNCharacterStream(idx, value));
     }
     @Override
     public B bindNCharacterStream(Reader value) {
@@ -374,8 +351,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bindNCharacterStream(int idx, Reader value, long length) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setNCharacterStream(idx, value, length));
+        return bindParameter(idx, value, ps -> ps.setNCharacterStream(idx, value, length));
     }
     @Override
     public B bindNCharacterStream(Reader value, long length) {
@@ -384,8 +360,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bindAsciiStream(int idx, InputStream value) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setAsciiStream(idx, value));
+        return bindParameter(idx, value, ps -> ps.setAsciiStream(idx, value));
     }
     @Override
     public B bindAsciiStream(InputStream value) {
@@ -394,8 +369,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bindAsciiStream(int idx, InputStream value, int length) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setAsciiStream(idx, value, length));
+        return bindParameter(idx, value, ps -> ps.setAsciiStream(idx, value, length));
     }
     @Override
     public B bindAsciiStream(InputStream value, int length) {
@@ -404,8 +378,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bindAsciiStream(int idx, InputStream value, long length) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setAsciiStream(idx, value, length));
+        return bindParameter(idx, value, ps -> ps.setAsciiStream(idx, value, length));
     }
     @Override
     public B bindAsciiStream(InputStream value, long length) {
@@ -414,8 +387,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bind(int idx, Object value) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setObject(idx, value));
+        return bindParameter(idx, value, ps -> ps.setObject(idx, value));
     }
     @Override
     public B bind(Object value) {
@@ -424,8 +396,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bind(int idx, Object value, int targetSqlType) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setObject(idx, value, targetSqlType));
+        return bindParameter(idx, value, ps -> ps.setObject(idx, value, targetSqlType));
     }
     @Override
     public B bind(Object value, int targetSqlType) {
@@ -434,8 +405,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bind(int idx, Object value, int targetSqlType, int scaleOrLength) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> ps.setObject(idx, value, targetSqlType, scaleOrLength));
+        return bindParameter(idx, value, ps -> ps.setObject(idx, value, targetSqlType, scaleOrLength));
     }
     @Override
     public B bind(Object value, int targetSqlType, int scaleOrLength) {
@@ -444,8 +414,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bind(int idx, Object[] value) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> {
+        return bindParameter(idx, value, ps -> {
             if (value == null) {
                 ps.setNull(idx, Types.ARRAY);
             } else {
@@ -462,8 +431,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bind(int idx, Collection<?> value) {
-        currentIndex = Math.max(currentIndex, idx + 1);
-        return bind(ps -> {
+        return bindParameter(idx, value, ps -> {
             if (value == null) {
                 ps.setNull(idx, Types.ARRAY);
             } else {
