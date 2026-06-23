@@ -21,21 +21,45 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     protected final List<StatementBinder<S>> binders = new ArrayList<>();
     protected final Map<Integer, Object> boundParameters = new TreeMap<>();
+
+    protected enum BindMode {
+        UNSET,
+        SEQUENTIAL,
+        INDEXED,
+        FUNCTIONAL
+    }
+
+    protected BindMode bindMode = BindMode.UNSET;
+    private boolean processingSequential = false;
+
+    protected void setBindMode(BindMode newMode) {
+        if (this.bindMode == BindMode.UNSET) {
+            this.bindMode = newMode;
+        } else if (this.bindMode != newMode) {
+            throw new IllegalStateException("Cannot mix bind modes. Current mode: " + this.bindMode + ", attempted: " + newMode);
+        }
+    }
+
+    protected B addBinder(StatementBinder<S> binder) {
+        binders.add(binder);
+        return self();
+    }
     protected int currentIndex = 1;
     protected Consumer<dev.j8a.jdbc.fluent.api.QueryContext> logConsumer;
 
     private B bindParameter(int idx, Object value, StatementBinder<S> binder) {
+        setBindMode(processingSequential ? BindMode.SEQUENTIAL : BindMode.INDEXED);
         currentIndex = Math.max(currentIndex, idx + 1);
         boundParameters.put(idx, value);
-        return bind(binder);
+        return addBinder(binder);
     }
 
     protected abstract B self();
 
     @Override
     public B bind(StatementBinder<S> binder) {
-        binders.add(binder);
-        return self();
+        setBindMode(BindMode.FUNCTIONAL);
+        return addBinder(binder);
     }
 
     @Override
@@ -44,7 +68,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bind(String value) {
-        return bind(currentIndex++, value);
+        processingSequential = true;
+        try {
+            return bind(currentIndex++, value);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -53,7 +82,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bind(int value) {
-        return bind(currentIndex++, value);
+        processingSequential = true;
+        try {
+            return bind(currentIndex++, value);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -62,7 +96,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bind(long value) {
-        return bind(currentIndex++, value);
+        processingSequential = true;
+        try {
+            return bind(currentIndex++, value);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     // ... I will need to do this for ALL types. This is a lot of code. 
@@ -76,7 +115,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bind(double value) {
-        return bind(currentIndex++, value);
+        processingSequential = true;
+        try {
+            return bind(currentIndex++, value);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -85,7 +129,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bind(boolean value) {
-        return bind(currentIndex++, value);
+        processingSequential = true;
+        try {
+            return bind(currentIndex++, value);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -94,7 +143,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bind(float value) {
-        return bind(currentIndex++, value);
+        processingSequential = true;
+        try {
+            return bind(currentIndex++, value);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -103,7 +157,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bind(short value) {
-        return bind(currentIndex++, value);
+        processingSequential = true;
+        try {
+            return bind(currentIndex++, value);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -112,7 +171,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bind(byte value) {
-        return bind(currentIndex++, value);
+        processingSequential = true;
+        try {
+            return bind(currentIndex++, value);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -121,7 +185,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bind(byte[] value) {
-        return bind(currentIndex++, value);
+        processingSequential = true;
+        try {
+            return bind(currentIndex++, value);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -130,7 +199,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bind(BigDecimal value) {
-        return bind(currentIndex++, value);
+        processingSequential = true;
+        try {
+            return bind(currentIndex++, value);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -139,7 +213,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bind(Date value) {
-        return bind(currentIndex++, value);
+        processingSequential = true;
+        try {
+            return bind(currentIndex++, value);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -148,7 +227,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bind(Time value) {
-        return bind(currentIndex++, value);
+        processingSequential = true;
+        try {
+            return bind(currentIndex++, value);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -157,7 +241,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bind(Timestamp value) {
-        return bind(currentIndex++, value);
+        processingSequential = true;
+        try {
+            return bind(currentIndex++, value);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -166,7 +255,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bind(LocalDate value) {
-        return bind(currentIndex++, value);
+        processingSequential = true;
+        try {
+            return bind(currentIndex++, value);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -175,7 +269,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bind(LocalTime value) {
-        return bind(currentIndex++, value);
+        processingSequential = true;
+        try {
+            return bind(currentIndex++, value);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -184,7 +283,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bind(LocalDateTime value) {
-        return bind(currentIndex++, value);
+        processingSequential = true;
+        try {
+            return bind(currentIndex++, value);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -193,7 +297,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bind(OffsetDateTime value) {
-        return bind(currentIndex++, value);
+        processingSequential = true;
+        try {
+            return bind(currentIndex++, value);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -202,7 +311,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bind(OffsetTime value) {
-        return bind(currentIndex++, value);
+        processingSequential = true;
+        try {
+            return bind(currentIndex++, value);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -211,7 +325,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bind(ZonedDateTime value) {
-        return bind(currentIndex++, value);
+        processingSequential = true;
+        try {
+            return bind(currentIndex++, value);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -220,7 +339,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bind(URL value) {
-        return bind(currentIndex++, value);
+        processingSequential = true;
+        try {
+            return bind(currentIndex++, value);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -229,7 +353,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bind(Blob value) {
-        return bind(currentIndex++, value);
+        processingSequential = true;
+        try {
+            return bind(currentIndex++, value);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -238,7 +367,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bind(Clob value) {
-        return bind(currentIndex++, value);
+        processingSequential = true;
+        try {
+            return bind(currentIndex++, value);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -247,7 +381,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bind(NClob value) {
-        return bind(currentIndex++, value);
+        processingSequential = true;
+        try {
+            return bind(currentIndex++, value);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -256,7 +395,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bind(SQLXML value) {
-        return bind(currentIndex++, value);
+        processingSequential = true;
+        try {
+            return bind(currentIndex++, value);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -265,7 +409,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bind(Ref value) {
-        return bind(currentIndex++, value);
+        processingSequential = true;
+        try {
+            return bind(currentIndex++, value);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -274,7 +423,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bind(RowId value) {
-        return bind(currentIndex++, value);
+        processingSequential = true;
+        try {
+            return bind(currentIndex++, value);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -283,7 +437,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bind(InputStream value) {
-        return bind(currentIndex++, value);
+        processingSequential = true;
+        try {
+            return bind(currentIndex++, value);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -292,7 +451,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bind(InputStream value, int length) {
-        return bind(currentIndex++, value, length);
+        processingSequential = true;
+        try {
+            return bind(currentIndex++, value, length);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -301,7 +465,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bind(InputStream value, long length) {
-        return bind(currentIndex++, value, length);
+        processingSequential = true;
+        try {
+            return bind(currentIndex++, value, length);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -310,7 +479,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bind(Reader value) {
-        return bind(currentIndex++, value);
+        processingSequential = true;
+        try {
+            return bind(currentIndex++, value);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -319,7 +493,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bind(Reader value, int length) {
-        return bind(currentIndex++, value, length);
+        processingSequential = true;
+        try {
+            return bind(currentIndex++, value, length);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -328,7 +507,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bind(Reader value, long length) {
-        return bind(currentIndex++, value, length);
+        processingSequential = true;
+        try {
+            return bind(currentIndex++, value, length);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -337,7 +521,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bindNString(String value) {
-        return bindNString(currentIndex++, value);
+        processingSequential = true;
+        try {
+            return bindNString(currentIndex++, value);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -346,7 +535,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bindNCharacterStream(Reader value) {
-        return bindNCharacterStream(currentIndex++, value);
+        processingSequential = true;
+        try {
+            return bindNCharacterStream(currentIndex++, value);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -355,7 +549,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bindNCharacterStream(Reader value, long length) {
-        return bindNCharacterStream(currentIndex++, value, length);
+        processingSequential = true;
+        try {
+            return bindNCharacterStream(currentIndex++, value, length);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -364,7 +563,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bindAsciiStream(InputStream value) {
-        return bindAsciiStream(currentIndex++, value);
+        processingSequential = true;
+        try {
+            return bindAsciiStream(currentIndex++, value);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -373,7 +577,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bindAsciiStream(InputStream value, int length) {
-        return bindAsciiStream(currentIndex++, value, length);
+        processingSequential = true;
+        try {
+            return bindAsciiStream(currentIndex++, value, length);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -382,7 +591,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bindAsciiStream(InputStream value, long length) {
-        return bindAsciiStream(currentIndex++, value, length);
+        processingSequential = true;
+        try {
+            return bindAsciiStream(currentIndex++, value, length);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -391,7 +605,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bind(Object value) {
-        return bind(currentIndex++, value);
+        processingSequential = true;
+        try {
+            return bind(currentIndex++, value);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -400,7 +619,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bind(Object value, int targetSqlType) {
-        return bind(currentIndex++, value, targetSqlType);
+        processingSequential = true;
+        try {
+            return bind(currentIndex++, value, targetSqlType);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -409,7 +633,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bind(Object value, int targetSqlType, int scaleOrLength) {
-        return bind(currentIndex++, value, targetSqlType, scaleOrLength);
+        processingSequential = true;
+        try {
+            return bind(currentIndex++, value, targetSqlType, scaleOrLength);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -426,7 +655,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bind(Object[] value) {
-        return bind(currentIndex++, value);
+        processingSequential = true;
+        try {
+            return bind(currentIndex++, value);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     @Override
@@ -444,7 +678,12 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
     @Override
     public B bind(Collection<?> value) {
-        return bind(currentIndex++, value);
+        processingSequential = true;
+        try {
+            return bind(currentIndex++, value);
+        } finally {
+            processingSequential = false;
+        }
     }
 
     protected String guessSqlTypeName(Class<?> componentType) {

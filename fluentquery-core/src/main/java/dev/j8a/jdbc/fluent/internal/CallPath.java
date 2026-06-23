@@ -32,14 +32,16 @@ public class CallPath<T> extends BaseStatementPath<CallableStatement, CallBinder
 
     @Override
     public CallBinder<T> bindOut(int sqlType) {
+        setBindMode(BindMode.SEQUENTIAL);
         int idx = currentIndex++;
-        return bind(cs -> cs.registerOutParameter(idx, sqlType));
+        return addBinder(cs -> cs.registerOutParameter(idx, sqlType));
     }
 
     @Override
     public CallBinder<T> bindOut(SQLType sqlType) {
+        setBindMode(BindMode.SEQUENTIAL);
         int idx = currentIndex++;
-        return bind(cs -> cs.registerOutParameter(idx, sqlType));
+        return addBinder(cs -> cs.registerOutParameter(idx, sqlType));
     }
 
     @Override
