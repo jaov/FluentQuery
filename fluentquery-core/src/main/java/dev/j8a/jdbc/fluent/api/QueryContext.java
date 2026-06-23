@@ -30,4 +30,14 @@ public final class QueryContext {
     public long getExecutionTimeNanos() {
         return executionTimeNanos;
     }
+
+    @Override
+    public String toString() {
+	return new StringBuilder("QueryContext: {\n")
+	    .append("\tsql: ").append(sql).append(",\n")
+	    .append("\tstatement: ").append(statementRepresentation).append(",\n")
+	    .append("\tboundParams: ").append(boundParameters).append(",\n")
+	    .append("\texecutionNanos: ").append(executionTimeNanos).append("\n")
+	    .append("}").toString();
+    }
 }
