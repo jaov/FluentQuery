@@ -104,7 +104,7 @@ public class TransactionTest extends AbstractFluentQueryTest {
                 .noBind()
                 .map(rs -> rs.getString(1))
                 .list()
-                .execute();
+                .execute(supplier);
         
         assertEquals("Bob", names.get(0));
     }

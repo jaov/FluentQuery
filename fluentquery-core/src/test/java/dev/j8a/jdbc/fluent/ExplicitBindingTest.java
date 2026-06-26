@@ -11,14 +11,14 @@ public class ExplicitBindingTest extends AbstractFluentQueryTest {
         FluentQuery.insert("INSERT INTO users (name, email) VALUES (?, ?)")
                 .bind(2, "john@example.com") // Explicit index 2
                 .bind(1, "John")             // Explicit index 1
-                .execute();
+                .execute(supplier);
 
         String email = FluentQuery.forClass(String.class)
                 .select("SELECT email FROM users WHERE name = ?")
                 .bind(1, "John")
                 .map(rs -> rs.getString(1))
                 .one()
-                .execute()
+                .execute(supplier)
                 .orElse(null);
 
         assertEquals("john@example.com", email);

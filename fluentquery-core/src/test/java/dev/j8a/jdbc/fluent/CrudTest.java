@@ -6,8 +6,10 @@ import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.List;
 import java.util.Optional;
+import java.util.concurrent.atomic.AtomicReference;
 
 
+import dev.j8a.jdbc.fluent.api.QueryContext;
 import dev.j8a.jdbc.fluent.api.QueryExecutor;
 import org.junit.jupiter.api.Test;
 
@@ -149,7 +151,7 @@ public class CrudTest extends AbstractFluentQueryTest {
         // Setup
         FluentQuery.insert("INSERT INTO users (name) VALUES (?)")
                 .bind(ps -> ps.setString(1, "Alice"))
-                .execute();
+                .execute(supplier);
 
         // Execute using function
         List<User> results = searchFunc.execute(supplier);
@@ -176,7 +178,7 @@ public class CrudTest extends AbstractFluentQueryTest {
 
     @Test
     void testLogging() throws Exception {
-        java.util.concurrent.atomic.AtomicReference<dev.j8a.jdbc.fluent.api.QueryContext> loggedCtx = new java.util.concurrent.atomic.AtomicReference<>();
+        AtomicReference<QueryContext> loggedCtx = new AtomicReference<>();
 
         FluentQuery.insert("INSERT INTO users (name, email) VALUES (?, ?)")
                 .bind(1, "LoggerUser")
