@@ -3,10 +3,13 @@ package dev.j8a.jdbc.fluent.internal;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.SQLException;
+import java.util.function.Consumer;
+
 
 import dev.j8a.jdbc.fluent.ConnectionSupplier;
-import dev.j8a.jdbc.fluent.internal.ConnectionSupplierLoader;
 import dev.j8a.jdbc.fluent.api.DmlBinder;
+import dev.j8a.jdbc.fluent.api.QueryContext;
+import dev.j8a.jdbc.fluent.internal.ConnectionSupplierLoader;
 
 /**
  * Handles DML statements (INSERT, UPDATE, DELETE).
@@ -25,7 +28,7 @@ public class DmlPath extends BaseStatementPath<PreparedStatement, DmlBinder> imp
     }
 
     @Override
-    public DmlBinder log(java.util.function.Consumer<dev.j8a.jdbc.fluent.api.QueryContext> logConsumer) {
+    public DmlBinder log(Consumer<QueryContext> logConsumer) {
         this.logConsumer = logConsumer;
         return this;
     }
@@ -49,7 +52,7 @@ public class DmlPath extends BaseStatementPath<PreparedStatement, DmlBinder> imp
             int rows = ps.executeUpdate();
             if (logConsumer != null) {
                 long duration = System.nanoTime() - start;
-                logConsumer.accept(new dev.j8a.jdbc.fluent.api.QueryContext(sql, boundParameters, ps.toString(), duration));
+                logConsumer.accept(new QueryContext(sql, boundParameters, ps.toString(), duration));
             }
             return rows;
         } finally {

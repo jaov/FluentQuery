@@ -7,11 +7,13 @@ import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.function.Consumer;
 
 
 import dev.j8a.jdbc.fluent.ConnectionSupplier;
 import dev.j8a.jdbc.fluent.RowMapper;
 import dev.j8a.jdbc.fluent.api.ListQueryExecutor;
+import dev.j8a.jdbc.fluent.api.QueryContext;
 import dev.j8a.jdbc.fluent.api.QueryExecutor;
 import dev.j8a.jdbc.fluent.api.QueryMapper;
 
@@ -34,10 +36,10 @@ public class SelectPath<T>
             @Override
             public ListQueryExecutor<T> list() {
                 return new ListQueryExecutor<T>() {
-                    private java.util.function.Consumer<dev.j8a.jdbc.fluent.api.QueryContext> logConsumer;
+                    private Consumer<QueryContext> logConsumer;
 
                     @Override
-                    public ListQueryExecutor<T> log(java.util.function.Consumer<dev.j8a.jdbc.fluent.api.QueryContext> logConsumer) {
+                    public ListQueryExecutor<T> log(Consumer<QueryContext> logConsumer) {
                         this.logConsumer = logConsumer;
                         return this;
                     }
@@ -60,7 +62,7 @@ public class SelectPath<T>
                                 }
                                 if (logConsumer != null) {
                                     long duration = System.nanoTime() - start;
-                                    logConsumer.accept(new dev.j8a.jdbc.fluent.api.QueryContext(sql, boundParameters, ps.toString(), duration));
+                                    logConsumer.accept(new QueryContext(sql, boundParameters, ps.toString(), duration));
                                 }
                                 return list;
                             }
@@ -76,10 +78,10 @@ public class SelectPath<T>
             @Override
             public QueryExecutor<Optional<T>> one() {
                 return new QueryExecutor<Optional<T>>() {
-                    private java.util.function.Consumer<dev.j8a.jdbc.fluent.api.QueryContext> logConsumer;
+                    private Consumer<QueryContext> logConsumer;
 
                     @Override
-                    public QueryExecutor<Optional<T>> log(java.util.function.Consumer<dev.j8a.jdbc.fluent.api.QueryContext> logConsumer) {
+                    public QueryExecutor<Optional<T>> log(Consumer<QueryContext> logConsumer) {
                         this.logConsumer = logConsumer;
                         return this;
                     }
@@ -102,7 +104,7 @@ public class SelectPath<T>
                                 }
                                 if (logConsumer != null) {
                                     long duration = System.nanoTime() - start;
-                                    logConsumer.accept(new dev.j8a.jdbc.fluent.api.QueryContext(sql, boundParameters, ps.toString(), duration));
+                                    logConsumer.accept(new QueryContext(sql, boundParameters, ps.toString(), duration));
                                 }
                                 return result;
                             }

@@ -5,17 +5,15 @@ import java.io.Reader;
 import java.math.BigDecimal;
 import java.net.URL;
 import java.sql.*;
+import java.sql.Date;
 import java.time.*;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.function.Consumer;
 
 
 import dev.j8a.jdbc.fluent.StatementBinder;
 import dev.j8a.jdbc.fluent.api.FluentBinder;
+import dev.j8a.jdbc.fluent.api.QueryContext;
 
 public abstract class BaseStatementPath<S extends PreparedStatement, B> implements FluentBinder<S, B> {
 
@@ -45,7 +43,7 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
         return self();
     }
     protected int currentIndex = 1;
-    protected Consumer<dev.j8a.jdbc.fluent.api.QueryContext> logConsumer;
+    protected Consumer<QueryContext> logConsumer;
 
     private B bindParameter(int idx, Object value, StatementBinder<S> binder) {
         setBindMode(processingSequential ? BindMode.SEQUENTIAL : BindMode.INDEXED);

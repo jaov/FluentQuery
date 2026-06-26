@@ -4,12 +4,14 @@ import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.SQLType;
+import java.util.function.Consumer;
+
 
 import dev.j8a.jdbc.fluent.CallableMapper;
 import dev.j8a.jdbc.fluent.ConnectionSupplier;
-import dev.j8a.jdbc.fluent.internal.ConnectionSupplierLoader;
 import dev.j8a.jdbc.fluent.api.CallBinder;
 import dev.j8a.jdbc.fluent.api.CallMapper;
+import dev.j8a.jdbc.fluent.api.QueryContext;
 import dev.j8a.jdbc.fluent.api.QueryExecutor;
 
 /**
@@ -49,10 +51,10 @@ public class CallPath<T> extends BaseStatementPath<CallableStatement, CallBinder
         return this;
     }
 
-    private java.util.function.Consumer<dev.j8a.jdbc.fluent.api.QueryContext> logConsumer;
+    private Consumer<QueryContext> logConsumer;
 
     @Override
-    public QueryExecutor<T> log(java.util.function.Consumer<dev.j8a.jdbc.fluent.api.QueryContext> logConsumer) {
+    public QueryExecutor<T> log(Consumer<QueryContext> logConsumer) {
         this.logConsumer = logConsumer;
         return this;
     }
@@ -67,10 +69,10 @@ public class CallPath<T> extends BaseStatementPath<CallableStatement, CallBinder
     public QueryExecutor<Void> voidCall() {
         this.mapper = null;
         return new QueryExecutor<Void>() {
-            private java.util.function.Consumer<dev.j8a.jdbc.fluent.api.QueryContext> voidLogConsumer;
+            private Consumer<QueryContext> voidLogConsumer;
 
             @Override
-            public QueryExecutor<Void> log(java.util.function.Consumer<dev.j8a.jdbc.fluent.api.QueryContext> logConsumer) {
+            public QueryExecutor<Void> log(Consumer<QueryContext> logConsumer) {
                 this.voidLogConsumer = logConsumer;
                 CallPath.this.log(logConsumer);
                 return this;
@@ -109,7 +111,7 @@ public class CallPath<T> extends BaseStatementPath<CallableStatement, CallBinder
             T result = mapper != null ? mapper.map(stmt) : null;
             if (logConsumer != null) {
                 long duration = System.nanoTime() - start;
-                logConsumer.accept(new dev.j8a.jdbc.fluent.api.QueryContext(sql, boundParameters, stmt.toString(), duration));
+                logConsumer.accept(new QueryContext(sql, boundParameters, stmt.toString(), duration));
             }
             return result;
         } finally {
