@@ -641,16 +641,26 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
 
     @Override
     public B bind(int idx, Object[] value) {
-        return bindParameter(idx, value, ps -> {
+        return bind(idx, value, guessSqlTypeName(value.getClass().getComponentType()));
+    }
+
+    @Override
+    public B bind(int index, Object[] value, String typeName) {
+        return bindParameter(index, value, ps -> {
             if (value == null) {
-                ps.setNull(idx, Types.ARRAY);
+                ps.setNull(index, Types.ARRAY);
             } else {
-                String typeName = guessSqlTypeName(value.getClass().getComponentType());
                 Array array = ps.getConnection().createArrayOf(typeName, value);
-                ps.setArray(idx, array);
+                ps.setArray(index, array);
             }
         });
     }
+
+    @Override
+    public B bind(Object[] value, String type) {
+        return null;
+    }
+
     @Override
     public B bind(Object[] value) {
         processingSequential = true;
@@ -662,18 +672,33 @@ public abstract class BaseStatementPath<S extends PreparedStatement, B> implemen
     }
 
     @Override
-    public B bind(int idx, Collection<?> value) {
+    public B bind(int idx, Collection<?> value, String typeName) {
         return bindParameter(idx, value, ps -> {
             if (value == null) {
                 ps.setNull(idx, Types.ARRAY);
             } else {
                 Object[] arrayData = value.toArray();
-                String typeName = guessSqlTypeName(arrayData.getClass().getComponentType());
                 Array array = ps.getConnection().createArrayOf(typeName, arrayData);
                 ps.setArray(idx, array);
             }
         });
     }
+
+    @Override
+    public B bind(int idx, Collection<?> value) {
+        return bind(idx, value, guessSqlTypeName(value.getClass().getComponentType()));
+    }
+
+    @Override
+    public B bind(Collection<?> value, String type) {
+        processingSequential = true;
+        try {
+            return bind(currentIndex++, value, type);
+        } finally {
+            processingSequential = false;
+        }
+    }
+
     @Override
     public B bind(Collection<?> value) {
         processingSequential = true;

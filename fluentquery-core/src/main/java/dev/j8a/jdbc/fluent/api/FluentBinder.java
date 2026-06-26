@@ -112,4 +112,10 @@ public interface FluentBinder<S extends PreparedStatement, B> extends Binder<S, 
     B bind(Object[] value);
     B bind(int index, Collection<?> value);
     B bind(Collection<?> value);
+
+    B bind(int index, Object[] value, String typeName);
+    B bind(Object[] value, String typeName);
+    B bind(int index, Collection<?> value, String typeName);
+    B bind(Collection<?> value, String typeName);
+
 }
