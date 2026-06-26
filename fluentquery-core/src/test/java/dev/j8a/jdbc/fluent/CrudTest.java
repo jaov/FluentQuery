@@ -213,32 +213,24 @@ public class CrudTest extends AbstractFluentQueryTest {
     @Test
     void testBindModeValidation() {
         // Sequential then Indexed should throw
-        assertThrows(IllegalStateException.class, () -> {
-            FluentQuery.forClass(String.class).select("SELECT * FROM users WHERE name = ? AND email = ?")
-                    .bind("John")
-                    .bind(2, "john@example.com");
-        });
+        assertThrows(IllegalStateException.class, () -> FluentQuery.forClass(String.class).select("SELECT * FROM users WHERE name = ? AND email = ?")
+                .bind("John")
+                .bind(2, "john@example.com"));
 
         // Indexed then Sequential should throw
-        assertThrows(IllegalStateException.class, () -> {
-            FluentQuery.forClass(String.class).select("SELECT * FROM users WHERE name = ? AND email = ?")
-                    .bind(1, "John")
-                    .bind("john@example.com");
-        });
+        assertThrows(IllegalStateException.class, () -> FluentQuery.forClass(String.class).select("SELECT * FROM users WHERE name = ? AND email = ?")
+                .bind(1, "John")
+                .bind("john@example.com"));
 
         // Sequential then Functional should throw
-        assertThrows(IllegalStateException.class, () -> {
-            FluentQuery.forClass(String.class).select("SELECT * FROM users WHERE name = ? AND email = ?")
-                    .bind("John")
-                    .bind(ps -> ps.setString(2, "john@example.com"));
-        });
+        assertThrows(IllegalStateException.class, () -> FluentQuery.forClass(String.class).select("SELECT * FROM users WHERE name = ? AND email = ?")
+                .bind("John")
+                .bind(ps -> ps.setString(2, "john@example.com")));
 
         // Functional then Indexed should throw
-        assertThrows(IllegalStateException.class, () -> {
-            FluentQuery.forClass(String.class).select("SELECT * FROM users WHERE name = ? AND email = ?")
-                    .bind(ps -> ps.setString(1, "John"))
-                    .bind(2, "john@example.com");
-        });
+        assertThrows(IllegalStateException.class, () -> FluentQuery.forClass(String.class).select("SELECT * FROM users WHERE name = ? AND email = ?")
+                .bind(ps -> ps.setString(1, "John"))
+                .bind(2, "john@example.com"));
     }
 
     public static ResultSet getUsersFunc(Connection con) throws SQLException {
