@@ -1,6 +1,7 @@
 package dev.j8a.jdbc.fluent.api;
 
 import java.util.Map;
+import java.util.TreeMap;
 
 public final class QueryContext {
     private final String sql;
@@ -10,7 +11,7 @@ public final class QueryContext {
 
     public QueryContext(String sql, Map<Integer, Object> boundParameters, String statementRepresentation, long executionTimeNanos) {
         this.sql = sql;
-        this.boundParameters = Map.copyOf(boundParameters);
+        this.boundParameters =  new TreeMap<>(boundParameters);
         this.statementRepresentation = statementRepresentation;
         this.executionTimeNanos = executionTimeNanos;
     }
