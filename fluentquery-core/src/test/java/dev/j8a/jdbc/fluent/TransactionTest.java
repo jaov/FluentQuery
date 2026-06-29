@@ -17,11 +17,11 @@ public class TransactionTest extends AbstractFluentQueryTest {
     void testCommit() throws Exception {
         FluentQuery.transaction(supplier, cs -> {
             FluentQuery.insert("INSERT INTO users (name) VALUES (?)")
-                    .bind(ps -> ps.setString(1, "Alice"))
+                    .bind("Alice")
                     .execute(cs);
             
             FluentQuery.insert("INSERT INTO users (name) VALUES (?)")
-                    .bind(ps -> ps.setString(1, "Bob"))
+                    .bind("Bob")
                     .execute(cs);
         });
 
@@ -32,7 +32,7 @@ public class TransactionTest extends AbstractFluentQueryTest {
     void testRollback() throws SQLException {
         assertThrows(RuntimeException.class, () -> FluentQuery.transaction(supplier, cs -> {
             FluentQuery.insert("INSERT INTO users (name) VALUES (?)")
-                    .bind(ps -> ps.setString(1, "Alice"))
+                    .bind("Alice")
                     .execute(cs);
 
             throw new RuntimeException("Force rollback");
@@ -45,13 +45,13 @@ public class TransactionTest extends AbstractFluentQueryTest {
     void testManualCommit() throws Exception {
         FluentQuery.transaction(supplier, cs -> {
             FluentQuery.insert("INSERT INTO users (name) VALUES (?)")
-                    .bind(ps -> ps.setString(1, "Alice"))
+                    .bind("Alice")
                     .execute(cs);
             
             cs.commit();
 
             FluentQuery.insert("INSERT INTO users (name) VALUES (?)")
-                    .bind(ps -> ps.setString(1, "Bob"))
+                    .bind("Bob")
                     .execute(cs);
         });
 
@@ -62,13 +62,13 @@ public class TransactionTest extends AbstractFluentQueryTest {
     void testDoubleCommit() throws Exception {
         FluentQuery.transaction(supplier, cs -> {
             FluentQuery.insert("INSERT INTO users (name) VALUES (?)")
-                    .bind(ps -> ps.setString(1, "Alice"))
+                    .bind("Alice")
                     .execute(cs);
             
             cs.commit(); // Manual commit 1
 
             FluentQuery.insert("INSERT INTO users (name) VALUES (?)")
-                    .bind(ps -> ps.setString(1, "Bob"))
+                    .bind("Bob")
                     .execute(cs);
             
             // Automatic commit will happen after this
@@ -81,13 +81,13 @@ public class TransactionTest extends AbstractFluentQueryTest {
     void testManualRollbackThenWork() throws Exception {
         FluentQuery.transaction(supplier, cs -> {
             FluentQuery.insert("INSERT INTO users (name) VALUES (?)")
-                    .bind(ps -> ps.setString(1, "Alice"))
+                    .bind("Alice")
                     .execute(cs);
             
             cs.rollback(); // Alice is gone
 
             FluentQuery.insert("INSERT INTO users (name) VALUES (?)")
-                    .bind(ps -> ps.setString(1, "Bob"))
+                    .bind("Bob")
                     .execute(cs);
             
             // Automatic commit will happen for Bob
@@ -97,7 +97,7 @@ public class TransactionTest extends AbstractFluentQueryTest {
         
         List<String> names = FluentQuery.forClass(String.class)
                 .select("SELECT name FROM users")
-                .noBind()
+                .noParams()
                 .map(rs -> rs.getString(1))
                 .list()
                 .execute(supplier);
@@ -162,8 +162,7 @@ public class TransactionTest extends AbstractFluentQueryTest {
      */
     private QueryExecutor<Optional<Integer>> insertUser(String name, String email) {
         return FluentQuery.<Integer>insertReturningId("INSERT INTO users (name, email) VALUES (?, ?)")
-                .bind(name)
-                .bind(email)
+                .bind(name, email)
                 .mapInt()
                 .one();
     }
@@ -201,7 +200,7 @@ public class TransactionTest extends AbstractFluentQueryTest {
     private int countUsers() throws SQLException {
         return FluentQuery.forClass(Integer.class)
                 .select("SELECT COUNT(*) FROM users")
-                .noBind()
+                .noParams()
                 .map(rs -> rs.getInt(1))
                 .one()
                 .execute(supplier)

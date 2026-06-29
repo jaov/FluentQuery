@@ -10,6 +10,7 @@ import java.util.Arrays;
 import java.util.List;
 
 
+import dev.j8a.jdbc.fluent.internal.bind.parameters.SqlArrayParam;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -34,8 +35,7 @@ public class AutoBindTest extends AbstractFluentQueryTest {
     void testAutoBindSelect() throws Exception {
         List<String> names = FluentQuery.forClass(String.class)
                 .select("SELECT name FROM test_users WHERE age > ? AND active = ?")
-                .bind(20)      // index 1
-                .bind(true)    // index 2
+                .bind(20,true)    // index 2
                 .map(rs -> rs.getString(1))
                 .list()
                 .execute(supplier);
@@ -47,15 +47,14 @@ public class AutoBindTest extends AbstractFluentQueryTest {
     @Test
     void testAutoBindDml() throws Exception {
         int updated = FluentQuery.update("UPDATE test_users SET name = ? WHERE id = ?")
-                .bind("Johnny") // index 1
-                .bind(1)        // index 2
+                .bind("Johnny", 1)        // index 2
                 .execute(supplier);
 
         assertEquals(1, updated);
 
         String name = FluentQuery.forClass(String.class)
                 .select("SELECT name FROM test_users WHERE id = 1")
-                .noBind()
+                .noParams()
                 .map(rs -> rs.getString(1))
                 .one()
                 .execute(supplier)
@@ -69,13 +68,12 @@ public class AutoBindTest extends AbstractFluentQueryTest {
         LocalDateTime now = LocalDateTime.of(2026, 5, 11, 12, 0);
         
         FluentQuery.update("UPDATE test_users SET created_at = ? WHERE id = ?")
-                .bind(now) // index 1
-                .bind(2)   // index 2
+                .bind(now,2)   // index 2
                 .execute(supplier);
 
         LocalDateTime createdAt = FluentQuery.forClass(LocalDateTime.class)
                 .select("SELECT created_at FROM test_users WHERE id = 2")
-                .noBind()
+                .noParams()
                 .map(rs -> rs.getTimestamp(1).toLocalDateTime())
                 .one()
                 .execute(supplier)
@@ -96,14 +94,12 @@ public class AutoBindTest extends AbstractFluentQueryTest {
         LocalDateTime dateTime = LocalDateTime.of(2026, 5, 11, 14, 30, 0);
 
         FluentQuery.insert("INSERT INTO temporal_test VALUES (?, ?, ?)")
-                .bind(date)     // setDate
-                .bind(time)     // setTime
-                .bind(dateTime) // setTimestamp
+                .bind(date,time,dateTime) // setTimestamp
                 .execute(supplier);
 
         FluentQuery.forClass(String.class)
                 .select("SELECT d, t, ts FROM temporal_test")
-                .noBind()
+                .noParams()
                 .map(rs -> {
                     assertEquals(date, rs.getDate(1).toLocalDate());
                     assertEquals(time, rs.getTime(2).toLocalTime());
@@ -123,13 +119,12 @@ public class AutoBindTest extends AbstractFluentQueryTest {
         String[] tags = {"java", "sql", "fluent"};
         
         FluentQuery.insert("INSERT INTO tags_table VALUES (?, ?)")
-                .bind(1)    // index 1
-                .bind(tags) // index 2
+                .bind(1, SqlArrayParam.of(Arrays.asList(tags),"varchar"))
                 .execute(supplier);
 
         Object[] resultTags = (Object[]) FluentQuery.forClass(Object.class)
                 .select("SELECT tags FROM tags_table WHERE id = 1")
-                .noBind()
+                .noParams()
                 .map(rs -> rs.getArray(1).getArray())
                 .one()
                 .execute(supplier)
@@ -151,13 +146,12 @@ public class AutoBindTest extends AbstractFluentQueryTest {
         List<String> tags = Arrays.asList("a", "b");
         
         FluentQuery.insert("INSERT INTO collection_tags VALUES (?, ?)")
-                .bind(2)    // index 1
-                .bind(tags) // index 2
+                .bind(2,SqlArrayParam.of(tags,"varchar")) // index 2
                 .execute(supplier);
 
         Object[] resultTags = (Object[]) FluentQuery.forClass(Object.class)
                 .select("SELECT tags FROM collection_tags WHERE id = 2")
-                .noBind()
+                .noParams()
                 .map(rs -> rs.getArray(1).getArray())
                 .one()
                 .execute(supplier)

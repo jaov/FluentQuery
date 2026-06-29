@@ -10,6 +10,7 @@ import java.util.function.Consumer;
 import dev.j8a.jdbc.fluent.ConnectionSupplier;
 import dev.j8a.jdbc.fluent.RowMapper;
 import dev.j8a.jdbc.fluent.api.*;
+import dev.j8a.jdbc.fluent.internal.bind.PsBinderCreator;
 
 public class InsertReturningPath<T> extends BaseStatementPath<PreparedStatement, InsertReturningPath<T>> {
 
@@ -19,6 +20,7 @@ public class InsertReturningPath<T> extends BaseStatementPath<PreparedStatement,
     public InsertReturningPath(String sql, boolean useGeneratedKeys) {
         this.sql = sql;
         this.useGeneratedKeys = useGeneratedKeys;
+        this.binderCreator = new PsBinderCreator();
     }
 
     @Override
@@ -83,7 +85,7 @@ public class InsertReturningPath<T> extends BaseStatementPath<PreparedStatement,
         Connection con = s.get();
         long start = System.nanoTime();
         try (PreparedStatement ps = prepare(con)) {
-            applyBinders(ps);
+
             ResultSet rs = executeAndGetResultSet(ps);
             List<R> list = new ArrayList<>();
             if (rs != null) {
@@ -95,7 +97,7 @@ public class InsertReturningPath<T> extends BaseStatementPath<PreparedStatement,
             }
             if (logConsumer != null) {
                 long duration = System.nanoTime() - start;
-                logConsumer.accept(new QueryContext(sql, boundParameters, ps.toString(), duration));
+                logConsumer.accept(new QueryContext(sql, getBoundParameters(), ps.toString(), duration));
             }
             return list;
         } finally {
@@ -107,7 +109,7 @@ public class InsertReturningPath<T> extends BaseStatementPath<PreparedStatement,
         Connection con = s.get();
         long start = System.nanoTime();
         try (PreparedStatement ps = prepare(con)) {
-            applyBinders(ps);
+            binderCreator.create(getBoundParameters()).bind(ps);
             ResultSet rs = executeAndGetResultSet(ps);
             Optional<R> result = Optional.empty();
             if (rs != null) {
@@ -119,7 +121,7 @@ public class InsertReturningPath<T> extends BaseStatementPath<PreparedStatement,
             }
             if (logConsumer != null) {
                 long duration = System.nanoTime() - start;
-                logConsumer.accept(new QueryContext(sql, boundParameters, ps.toString(), duration));
+                logConsumer.accept(new QueryContext(sql, getBoundParameters(), ps.toString(), duration));
             }
             return result;
         } finally {

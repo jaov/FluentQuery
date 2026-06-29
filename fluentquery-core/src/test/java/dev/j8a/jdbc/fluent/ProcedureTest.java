@@ -3,6 +3,7 @@ package dev.j8a.jdbc.fluent;
 import java.sql.*;
 
 
+import dev.j8a.jdbc.fluent.internal.bind.parameters.OutParam;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -41,9 +42,7 @@ public class ProcedureTest extends AbstractFluentQueryTest {
     void testStoredProcedure() throws Exception {
         String result = FluentQuery.forClass(String.class)
                 .call("{? = CALL GET_USER_NAME(?, ?)}")
-                .bindOut(Types.VARCHAR) // index 1
-                .bind("John")           // index 2
-                .bind("Doe")            // index 3
+            .bind(OutParam.of(String.class), "John", "Doe")
                 .map(cs -> cs.getString(1))
                 .execute(supplier);
 
@@ -54,8 +53,7 @@ public class ProcedureTest extends AbstractFluentQueryTest {
     void testNoParamsWithMapper() throws Exception {
         String version = FluentQuery.forClass(String.class)
                 .call("{? = CALL GET_VERSION()}")
-                .bindOut(Types.VARCHAR)
-                .noParams()
+                .bind(OutParam.of(String.class))
                 .map(cs -> cs.getString(1))
                 .execute(supplier);
 

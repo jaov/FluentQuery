@@ -16,6 +16,7 @@ import dev.j8a.jdbc.fluent.api.ListQueryExecutor;
 import dev.j8a.jdbc.fluent.api.QueryContext;
 import dev.j8a.jdbc.fluent.api.QueryExecutor;
 import dev.j8a.jdbc.fluent.api.QueryMapper;
+import dev.j8a.jdbc.fluent.internal.bind.PsBinderCreator;
 
 public class SelectPath<T>
         extends BaseStatementPath<PreparedStatement, SelectPath<T>> {
@@ -24,6 +25,7 @@ public class SelectPath<T>
 
     public SelectPath(String sql) {
         this.sql = sql;
+        this.binderCreator = new PsBinderCreator();
     }
 
     @Override
@@ -54,7 +56,7 @@ public class SelectPath<T>
                         Connection con = s.get();
                         long start = System.nanoTime();
                         try (PreparedStatement ps = con.prepareStatement(sql)) {
-                            applyBinders(ps);
+                            binderCreator.create(getBoundParameters()).bind(ps);
                             try (ResultSet rs = ps.executeQuery()) {
                                 List<T> list = new ArrayList<>();
                                 while (rs.next()) {
@@ -62,7 +64,7 @@ public class SelectPath<T>
                                 }
                                 if (logConsumer != null) {
                                     long duration = System.nanoTime() - start;
-                                    logConsumer.accept(new QueryContext(sql, boundParameters, ps.toString(), duration));
+                                    logConsumer.accept(new QueryContext(sql, getBoundParameters(), ps.toString(), duration));
                                 }
                                 return list;
                             }
@@ -96,7 +98,7 @@ public class SelectPath<T>
                         Connection con = s.get();
                         long start = System.nanoTime();
                         try (PreparedStatement ps = con.prepareStatement(sql)) {
-                            applyBinders(ps);
+                            binderCreator.create(getBoundParameters()).bind(ps);
                             try (ResultSet rs = ps.executeQuery()) {
                                 Optional<T> result = Optional.empty();
                                 if (rs.next()) {
@@ -104,7 +106,7 @@ public class SelectPath<T>
                                 }
                                 if (logConsumer != null) {
                                     long duration = System.nanoTime() - start;
-                                    logConsumer.accept(new QueryContext(sql, boundParameters, ps.toString(), duration));
+                                    logConsumer.accept(new QueryContext(sql, getBoundParameters(), ps.toString(), duration));
                                 }
                                 return result;
                             }

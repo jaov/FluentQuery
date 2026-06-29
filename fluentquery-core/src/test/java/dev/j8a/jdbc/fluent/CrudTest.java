@@ -32,15 +32,12 @@ public class CrudTest extends AbstractFluentQueryTest {
     @Test
     void testInsertAndSelect() throws Exception {
         FluentQuery.insert("INSERT INTO users (name, email) VALUES (?, ?)")
-                .bind(ps -> {
-                    ps.setString(1, "John");
-                    ps.setString(2, "john@example.com");
-                })
+                .bind("John", "john@example.com")
                 .execute(supplier);
 
         List<User> users = FluentQuery.forClass(User.class)
                 .select("SELECT * FROM users WHERE name = ?")
-                .bind(ps -> ps.setString(1, "John"))
+                .bind("John")
                 .map(rs -> new User(rs.getInt("id"), rs.getString("name"), rs.getString("email")))
                 .list()
                 .execute(supplier);
@@ -53,21 +50,18 @@ public class CrudTest extends AbstractFluentQueryTest {
     @Test
     void testUpdate() throws Exception {
         FluentQuery.insert("INSERT INTO users (name) VALUES (?)")
-                .bind(ps -> ps.setString(1, "Old Name"))
+                .bind("Old Name")
                 .execute(supplier);
 
         int updated = FluentQuery.update("UPDATE users SET name = ? WHERE name = ?")
-                .bind(ps -> {
-                    ps.setString(1, "New Name");
-                    ps.setString(2, "Old Name");
-                })
+                .bind("New Name", "Old Name")
                 .execute(supplier);
 
         assertEquals(1, updated);
 
         Optional<String> name = FluentQuery.forClass(String.class)
                 .select("SELECT name FROM users")
-                .noBind()
+                .noParams()
                 .map(rs -> rs.getString(1))
                 .one()
                 .execute(supplier);
@@ -79,16 +73,16 @@ public class CrudTest extends AbstractFluentQueryTest {
     @Test
     void testDelete() throws Exception {
         FluentQuery.insert("INSERT INTO users (name) VALUES (?)")
-                .bind(ps -> ps.setString(1, "To Delete"))
+                .bind("To Delete")
                 .execute(supplier);
 
         FluentQuery.delete("DELETE FROM users WHERE name = ?")
-                .bind(ps -> ps.setString(1, "To Delete"))
+                .bind("To Delete")
                 .execute(supplier);
 
         List<String> names = FluentQuery.forClass(String.class)
                 .select("SELECT name FROM users")
-                .noBind()
+                .noParams()
                 .map(rs -> rs.getString(1))
                 .list()
                 .execute(supplier);
@@ -99,12 +93,12 @@ public class CrudTest extends AbstractFluentQueryTest {
     @Test
     void testSelectOne() throws Exception {
         FluentQuery.insert("INSERT INTO users (name) VALUES (?)")
-                .bind(ps -> ps.setString(1, "Alice"))
+                .bind("Alice")
                 .execute(supplier);
 
         Optional<User> user = FluentQuery.forClass(User.class)
                 .select("SELECT * FROM users WHERE name = ?")
-                .bind(ps -> ps.setString(1, "Alice"))
+                .bind("Alice")
                 .map(rs -> new User(rs.getInt("id"), rs.getString("name"), rs.getString("email")))
                 .one()
                 .execute(supplier);
@@ -114,7 +108,7 @@ public class CrudTest extends AbstractFluentQueryTest {
 
         Optional<User> none = FluentQuery.forClass(User.class)
                 .select("SELECT * FROM users WHERE name = ?")
-                .bind(ps -> ps.setString(1, "Bob"))
+                .bind("Bob")
                 .map(rs -> new User(rs.getInt("id"), rs.getString("name"), rs.getString("email")))
                 .one()
                 .execute(supplier);
@@ -128,7 +122,7 @@ public class CrudTest extends AbstractFluentQueryTest {
         
         User user = FluentQuery.forClass(User.class)
                 .insertReturning("CALL INSERT_RETURNING('Alice', 'alice@example.com')")
-                .noBind()
+                .noParams()
                 .map(rs -> new User(rs.getInt(1), "Alice", "alice@example.com"))
                 .list()
                 .execute(supplier)
@@ -144,13 +138,13 @@ public class CrudTest extends AbstractFluentQueryTest {
         QueryExecutor<List<User>> searchFunc =
                 FluentQuery.forClass(User.class)
                         .select("SELECT * FROM users WHERE name = ?")
-                        .bind(ps -> ps.setString(1, "Alice"))
+                        .bind("Alice")
                         .map(rs -> new User(rs.getInt("id"), rs.getString("name"), rs.getString("email")))
                         .list();
 
         // Setup
         FluentQuery.insert("INSERT INTO users (name) VALUES (?)")
-                .bind(ps -> ps.setString(1, "Alice"))
+                .bind("Alice")
                 .execute(supplier);
 
         // Execute using function
@@ -168,7 +162,7 @@ public class CrudTest extends AbstractFluentQueryTest {
 
         List<User> users = FluentQuery.forClass(User.class)
                 .select("SELECT * FROM GET_USERS_FUNC()")
-                .noBind()
+                .noParams()
                 .map(rs -> new User(rs.getInt("id"), rs.getString("name"), rs.getString("email")))
                 .list()
                 .execute(supplier);
@@ -181,8 +175,7 @@ public class CrudTest extends AbstractFluentQueryTest {
         AtomicReference<QueryContext> loggedCtx = new AtomicReference<>();
 
         FluentQuery.insert("INSERT INTO users (name, email) VALUES (?, ?)")
-                .bind(1, "LoggerUser")
-                .bind(2, "logger@example.com")
+                .bind("LoggerUser", "logger@example.com")
                 .log(loggedCtx::set)
                 .execute(supplier);
 
@@ -197,7 +190,7 @@ public class CrudTest extends AbstractFluentQueryTest {
 
         List<User> users = FluentQuery.forClass(User.class)
                 .select("SELECT * FROM users WHERE name = ?")
-                .bind(1, "LoggerUser")
+                .bind("LoggerUser")
                 .map(rs -> new User(rs.getInt("id"), rs.getString("name"), rs.getString("email")))
                 .list()
                 .log(loggedCtx::set)
@@ -208,29 +201,6 @@ public class CrudTest extends AbstractFluentQueryTest {
         assertEquals("LoggerUser", loggedCtx.get().getBoundParameters().get(1));
         assertNotNull(loggedCtx.get().getStatementRepresentation());
         assertTrue(loggedCtx.get().getExecutionTimeNanos() > 0);
-    }
-
-    @Test
-    void testBindModeValidation() {
-        // Sequential then Indexed should throw
-        assertThrows(IllegalStateException.class, () -> FluentQuery.forClass(String.class).select("SELECT * FROM users WHERE name = ? AND email = ?")
-                .bind("John")
-                .bind(2, "john@example.com"));
-
-        // Indexed then Sequential should throw
-        assertThrows(IllegalStateException.class, () -> FluentQuery.forClass(String.class).select("SELECT * FROM users WHERE name = ? AND email = ?")
-                .bind(1, "John")
-                .bind("john@example.com"));
-
-        // Sequential then Functional should throw
-        assertThrows(IllegalStateException.class, () -> FluentQuery.forClass(String.class).select("SELECT * FROM users WHERE name = ? AND email = ?")
-                .bind("John")
-                .bind(ps -> ps.setString(2, "john@example.com")));
-
-        // Functional then Indexed should throw
-        assertThrows(IllegalStateException.class, () -> FluentQuery.forClass(String.class).select("SELECT * FROM users WHERE name = ? AND email = ?")
-                .bind(ps -> ps.setString(1, "John"))
-                .bind(2, "john@example.com"));
     }
 
     public static ResultSet getUsersFunc(Connection con) throws SQLException {

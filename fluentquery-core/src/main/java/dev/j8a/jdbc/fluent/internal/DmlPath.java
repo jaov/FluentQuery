@@ -7,28 +7,29 @@ import java.util.function.Consumer;
 
 
 import dev.j8a.jdbc.fluent.ConnectionSupplier;
-import dev.j8a.jdbc.fluent.api.DmlBinder;
+import dev.j8a.jdbc.fluent.api.DmlParameterMapCreator;
 import dev.j8a.jdbc.fluent.api.QueryContext;
-import dev.j8a.jdbc.fluent.internal.ConnectionSupplierLoader;
+import dev.j8a.jdbc.fluent.internal.bind.PsBinderCreator;
 
 /**
  * Handles DML statements (INSERT, UPDATE, DELETE).
  * Execution can be performed with an explicit {@link ConnectionSupplier} or the default loader.
  */
-public class DmlPath extends BaseStatementPath<PreparedStatement, DmlBinder> implements DmlBinder {
+public class DmlPath extends BaseStatementPath<PreparedStatement, DmlParameterMapCreator> implements DmlParameterMapCreator {
     private final String sql;
 
     public DmlPath(String sql) {
         this.sql = sql;
+        this.binderCreator = new PsBinderCreator();
     }
 
     @Override
-    protected DmlBinder self() {
+    protected DmlParameterMapCreator self() {
         return this;
     }
 
     @Override
-    public DmlBinder log(Consumer<QueryContext> logConsumer) {
+    public DmlParameterMapCreator log(Consumer<QueryContext> logConsumer) {
         this.logConsumer = logConsumer;
         return this;
     }
@@ -44,15 +45,16 @@ public class DmlPath extends BaseStatementPath<PreparedStatement, DmlBinder> imp
         if (supplier == null) {
             throw new IllegalArgumentException("ConnectionSupplier cannot be null");
         }
-        System.out.println("DmlPath: Calling execute(ConnectionSupplier)");
+
         Connection con = supplier.get();
         long start = System.nanoTime();
         try (PreparedStatement ps = con.prepareStatement(sql)) {
-            applyBinders(ps);
+            binderCreator.create(getBoundParameters()).bind(ps);
+
             int rows = ps.executeUpdate();
             if (logConsumer != null) {
                 long duration = System.nanoTime() - start;
-                logConsumer.accept(new QueryContext(sql, boundParameters, ps.toString(), duration));
+                logConsumer.accept(new QueryContext(sql, getBoundParameters(), ps.toString(), duration));
             }
             return rows;
         } finally {

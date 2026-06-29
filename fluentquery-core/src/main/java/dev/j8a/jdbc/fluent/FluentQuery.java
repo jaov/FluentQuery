@@ -1,9 +1,5 @@
 package dev.j8a.jdbc.fluent;
 
-import java.sql.Connection;
-import java.sql.SQLException;
-import java.util.Optional;
-
 
 import dev.j8a.jdbc.fluent.api.*;
 import dev.j8a.jdbc.fluent.internal.*;
@@ -21,15 +17,15 @@ public final class FluentQuery {
         return new InsertReturningPath<>(sql, true);
     }
 
-    public static DmlBinder update(String sql) {
+    public static DmlParameterMapCreator update(String sql) {
         return new DmlPath(sql);
     }
 
-    public static DmlBinder delete(String sql) {
+    public static DmlParameterMapCreator delete(String sql) {
         return new DmlPath(sql);
     }
 
-    public static DmlBinder insert(String sql) {
+    public static DmlParameterMapCreator insert(String sql) {
         return new DmlPath(sql);
     }
 

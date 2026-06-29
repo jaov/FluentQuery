@@ -3,51 +3,42 @@ package dev.j8a.jdbc.fluent.internal;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.sql.SQLType;
+import java.util.Collections;
+import java.util.Map;
 import java.util.function.Consumer;
 
 
 import dev.j8a.jdbc.fluent.CallableMapper;
 import dev.j8a.jdbc.fluent.ConnectionSupplier;
-import dev.j8a.jdbc.fluent.api.CallBinder;
+import dev.j8a.jdbc.fluent.api.CallParameterMapCreator;
 import dev.j8a.jdbc.fluent.api.CallMapper;
 import dev.j8a.jdbc.fluent.api.QueryContext;
 import dev.j8a.jdbc.fluent.api.QueryExecutor;
+import dev.j8a.jdbc.fluent.internal.bind.ProcedureBinderCreator;
+import dev.j8a.jdbc.fluent.internal.bind.parameters.ParameterKey;
 
 /**
  * Path handling for callable statements (stored procedures / functions).
  * Allows execution with an explicit {@link ConnectionSupplier} or falls back to the default
  * {@link ConnectionSupplierLoader} when none is supplied.
  */
-public class CallPath<T> extends BaseStatementPath<CallableStatement, CallBinder<T>> implements CallBinder<T>, CallMapper<T>, QueryExecutor<T> {
+public class CallPath<T> extends BaseStatementPath<CallableStatement, CallMapper<T>> implements CallParameterMapCreator<T>, CallMapper<T>, QueryExecutor<T> {
     private final String sql;
     private CallableMapper<T> mapper;
 
     public CallPath(Class<T> ignoredClass, String sql) {
         this.sql = sql;
+        this.binderCreator = new ProcedureBinderCreator();
     }
 
     @Override
-    protected CallBinder<T> self() {
+    protected CallParameterMapCreator<T> self() {
         return this;
     }
 
     @Override
-    public CallBinder<T> bindOut(int sqlType) {
-        setBindMode(BindMode.SEQUENTIAL);
-        int idx = currentIndex++;
-        return addBinder(cs -> cs.registerOutParameter(idx, sqlType));
-    }
-
-    @Override
-    public CallBinder<T> bindOut(SQLType sqlType) {
-        setBindMode(BindMode.SEQUENTIAL);
-        int idx = currentIndex++;
-        return addBinder(cs -> cs.registerOutParameter(idx, sqlType));
-    }
-
-    @Override
-    public CallMapper<T> noParams() {
+    public CallMapper<T> bind(Object first, Object... rest) {
+        super.bind(first,rest);
         return this;
     }
 
@@ -69,11 +60,9 @@ public class CallPath<T> extends BaseStatementPath<CallableStatement, CallBinder
     public QueryExecutor<Void> voidCall() {
         this.mapper = null;
         return new QueryExecutor<Void>() {
-            private Consumer<QueryContext> voidLogConsumer;
 
             @Override
             public QueryExecutor<Void> log(Consumer<QueryContext> logConsumer) {
-                this.voidLogConsumer = logConsumer;
                 CallPath.this.log(logConsumer);
                 return this;
             }
@@ -106,13 +95,17 @@ public class CallPath<T> extends BaseStatementPath<CallableStatement, CallBinder
         Connection con = supplier.get();
         long start = System.nanoTime();
         try (CallableStatement stmt = con.prepareCall(sql)) {
-            applyBinders(stmt);
+            Map<ParameterKey,Object> boundParameters = getBoundParameters();
+            if(!boundParameters.isEmpty()) {
+                binderCreator.create(boundParameters).bind(stmt);
+            }
             stmt.execute();
             T result = mapper != null ? mapper.map(stmt) : null;
             if (logConsumer != null) {
                 long duration = System.nanoTime() - start;
                 logConsumer.accept(new QueryContext(sql, boundParameters, stmt.toString(), duration));
             }
+
             return result;
         } finally {
             if (supplier.shouldClose()) {
