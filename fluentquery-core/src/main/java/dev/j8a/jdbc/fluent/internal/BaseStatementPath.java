@@ -11,7 +11,7 @@ import java.util.*;
 import java.util.function.Consumer;
 
 
-import dev.j8a.jdbc.fluent.StatementBinder;
+import dev.j8a.jdbc.fluent.internal.bind.StatementBinder;
 import dev.j8a.jdbc.fluent.api.FluentBinder;
 import dev.j8a.jdbc.fluent.api.QueryContext;
 
