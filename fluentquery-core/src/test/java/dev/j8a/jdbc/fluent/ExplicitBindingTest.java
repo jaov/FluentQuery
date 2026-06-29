@@ -9,8 +9,9 @@ public class ExplicitBindingTest extends AbstractFluentQueryTest {
     @Test
     void testExplicitAndImplicitBindingMix() throws Exception {
         FluentQuery.insert("INSERT INTO users (name, email) VALUES (?, ?)")
-                .bind("John", "john@example.com")             // Explicit index 1
-                .execute(supplier);
+            .bind("John", "john@example.com")
+            .log(System.out::println)
+            .execute(supplier);
 
         String email = FluentQuery.forClass(String.class)
                 .select("SELECT email FROM users WHERE name = ?")

@@ -58,7 +58,7 @@ public class AutoBindTest extends AbstractFluentQueryTest {
                 .map(rs -> rs.getString(1))
                 .one()
                 .execute(supplier)
-                .get();
+                .orElseThrow(IllegalAccessException::new);
 
         assertEquals("Johnny", name);
     }
@@ -77,7 +77,7 @@ public class AutoBindTest extends AbstractFluentQueryTest {
                 .map(rs -> rs.getTimestamp(1).toLocalDateTime())
                 .one()
                 .execute(supplier)
-                .get();
+                .orElseThrow(IllegalAccessException::new);
 
         assertEquals(now, createdAt);
     }
@@ -128,7 +128,7 @@ public class AutoBindTest extends AbstractFluentQueryTest {
                 .map(rs -> rs.getArray(1).getArray())
                 .one()
                 .execute(supplier)
-                .get();
+                .orElseThrow(IllegalAccessException::new);
 
         assertEquals(3, resultTags.length);
         assertEquals("java", resultTags[0]);
@@ -155,7 +155,7 @@ public class AutoBindTest extends AbstractFluentQueryTest {
                 .map(rs -> rs.getArray(1).getArray())
                 .one()
                 .execute(supplier)
-                .get();
+                .orElseThrow(IllegalAccessException::new);
 
         assertEquals(2, resultTags.length);
         assertEquals("a", resultTags[0]);

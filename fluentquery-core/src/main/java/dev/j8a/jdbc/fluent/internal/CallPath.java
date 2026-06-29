@@ -3,7 +3,6 @@ package dev.j8a.jdbc.fluent.internal;
 import java.sql.CallableStatement;
 import java.sql.Connection;
 import java.sql.SQLException;
-import java.util.Collections;
 import java.util.Map;
 import java.util.function.Consumer;
 
