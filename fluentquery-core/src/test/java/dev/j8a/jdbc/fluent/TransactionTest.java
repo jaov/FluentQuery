@@ -6,8 +6,6 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Optional;
 
-
-import dev.j8a.jdbc.fluent.ConnectionSupplier;
 import dev.j8a.jdbc.fluent.api.QueryExecutor;
 import org.junit.jupiter.api.Test;
 
@@ -32,15 +30,13 @@ public class TransactionTest extends AbstractFluentQueryTest {
 
     @Test
     void testRollback() throws SQLException {
-        assertThrows(RuntimeException.class, () -> {
-            FluentQuery.transaction(supplier, cs -> {
-                FluentQuery.insert("INSERT INTO users (name) VALUES (?)")
-                        .bind(ps -> ps.setString(1, "Alice"))
-                        .execute(cs);
+        assertThrows(RuntimeException.class, () -> FluentQuery.transaction(supplier, cs -> {
+            FluentQuery.insert("INSERT INTO users (name) VALUES (?)")
+                    .bind(ps -> ps.setString(1, "Alice"))
+                    .execute(cs);
 
-                throw new RuntimeException("Force rollback");
-            });
-        });
+            throw new RuntimeException("Force rollback");
+        }));
 
         assertEquals(0, countUsers());
     }
@@ -144,8 +140,17 @@ public class TransactionTest extends AbstractFluentQueryTest {
         // Here we use the "QueryExecutor Pattern": 
         // We get a "Query Blueprint" and decide when/how to run it.
         User user = FluentQuery.transactionResult(supplier, cs -> {
-            int id = insertUser("Bob", "bob@example.com").execute(cs).get();
-            return new User(id, "Bob", "bob@example.com");
+            // Using our "DAO" method to insert
+            int id = insertUser("Bob", "bob@example.com").execute(cs).orElseThrow(IllegalStateException::new);
+
+            insertUser("a","b").andThen(getUser(id), cs);
+
+            // Using our "DAO" method to select
+            return getUser(id).execute(cs).orElseThrow(IllegalStateException::new);
+
+
+
+            // We can compose QueryExecutors inside this transaction thanks to the `execute(ConnectionSupplier)` method.
         });
 
         assertEquals("Bob", user.name);
@@ -165,16 +170,21 @@ public class TransactionTest extends AbstractFluentQueryTest {
                 .one();
     }
 
+    private QueryExecutor<Optional<User>> getUser(int id) {
+        return FluentQuery.forClass(User.class).select("SELECT name, email from users where id = ?")
+            .bind(id)
+            .map(rs -> new User(id,rs.getString("name"), rs.getString("email")))
+            .one();
+    }
+
     @Test
     void testTransactionResultRollback() throws SQLException {
-        assertThrows(RuntimeException.class, () -> {
-            FluentQuery.transactionResult(supplier, cs -> {
-                FluentQuery.insert("INSERT INTO users (name) VALUES (?)")
-                        .bind("Alice")
-                        .execute(cs);
-                throw new RuntimeException("Rollback");
-            });
-        });
+        assertThrows(RuntimeException.class, () -> FluentQuery.transactionResult(supplier, cs -> {
+            FluentQuery.insert("INSERT INTO users (name) VALUES (?)")
+                    .bind("Alice")
+                    .execute(cs);
+            throw new RuntimeException("Rollback");
+        }));
 
         assertEquals(0, countUsers());
     }
