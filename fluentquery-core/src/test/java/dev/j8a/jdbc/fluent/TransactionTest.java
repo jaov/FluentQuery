@@ -143,8 +143,6 @@ public class TransactionTest extends AbstractFluentQueryTest {
             // Using our "DAO" method to insert
             int id = insertUser("Bob", "bob@example.com").execute(cs).orElseThrow(IllegalStateException::new);
 
-            insertUser("a","b").andThen(getUser(id), cs);
-
             // Using our "DAO" method to select
             return getUser(id).execute(cs).orElseThrow(IllegalStateException::new);
 
